@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/navigation/navigation_service.dart';
 import 'core/theme/app_theme.dart';
 import 'models/note.dart';
+import 'providers/theme_provider.dart';
 import 'screens/home_screen.dart';
 import 'screens/note_edit_screen.dart';
 import 'screens/note_view_screen.dart';
@@ -51,15 +52,22 @@ class App extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ProviderScope(
-      child: MaterialApp(
-        title: 'Hey Notes',
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.lightTheme,
-        darkTheme: AppTheme.darkTheme,
-        themeMode: ThemeMode.system,
-        navigatorKey: NavigationService.navigatorKey,
-        onGenerateRoute: AppRouter.generateRoute,
-        initialRoute: AppRoutes.home,
+      child: Consumer(
+        builder: (context, ref, _) {
+          final themeMode = ref.watch(themeProvider);
+          final themeData = ref.watch(themeDataProvider);
+          
+          return MaterialApp(
+            title: 'Hey Notes',
+            debugShowCheckedModeBanner: false,
+            theme: themeData,
+            darkTheme: AppTheme.darkTheme,
+            themeMode: themeMode,
+            navigatorKey: NavigationService.navigatorKey,
+            onGenerateRoute: AppRouter.generateRoute,
+            initialRoute: AppRoutes.home,
+          );
+        },
       ),
     );
   }

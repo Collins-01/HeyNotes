@@ -105,47 +105,36 @@ class NoteViewScreen extends ConsumerWidget {
                 Text(
                   'Created: ${DateFormat.yMMMd().add_jm().format(note.createdAt)}',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context)
-                            .textTheme
-                            .bodySmall
-                            ?.color
-                            ?.withOpacity(0.7),
-                      ),
+                    color: Theme.of(context).hintColor,
+                  ),
                 ),
                 Text(
                   'Updated: ${DateFormat.yMMMd().add_jm().format(note.updatedAt)}',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context)
-                            .textTheme
-                            .bodySmall
-                            ?.color
-                            ?.withOpacity(0.7),
-                      ),
+                    color: Theme.of(context).hintColor,
+                  ),
                 ),
               ],
             ),
             const SizedBox(height: 24),
 
-            // Tags (if any)
-            if (note.tags != null && note.tags!.isNotEmpty) ...[
+            // Tags
+            if (note.tags.isNotEmpty) ...[
               Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: note.tags!
-                    .map((tag) => Chip(
-                          label: Text(
-                            tag,
-                            style: Theme.of(context).textTheme.labelSmall,
-                          ),
-                          backgroundColor:
-                              Theme.of(context).colorScheme.surfaceVariant,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          visualDensity: VisualDensity.compact,
-                        ))
-                    .toList(),
+                spacing: 6.0,
+                runSpacing: 6.0,
+                children: note.tags.map((tag) => Chip(
+                  label: Text(
+                    tag,
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                  backgroundColor: Theme.of(context).colorScheme.surfaceVariant,
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  visualDensity: VisualDensity.compact,
+                )).toList(),
               ),
               const SizedBox(height: 24),
             ],

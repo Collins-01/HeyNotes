@@ -39,6 +39,25 @@ class NoteCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
               ],
+              if (note.tags.isNotEmpty) ...[
+                Wrap(
+                  spacing: 6.0,
+                  runSpacing: 4.0,
+                  children: note.tags.map((tag) => Chip(
+                    label: Text(
+                      tag,
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                    backgroundColor: Theme.of(context).colorScheme.surfaceVariant,
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
+                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    visualDensity: VisualDensity.compact,
+                  )).toList(),
+                ),
+                const SizedBox(height: 8),
+              ],
               Align(
                 alignment: Alignment.centerRight,
                 child: Text(

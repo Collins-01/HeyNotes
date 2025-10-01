@@ -16,6 +16,7 @@ class NoteEditScreen extends ConsumerStatefulWidget {
 class _NoteEditScreenState extends ConsumerState<NoteEditScreen> {
   late final TextEditingController _titleController;
   late final TextEditingController _contentController;
+  late final TextEditingController _tagsController;
   bool _isEditing = false;
   bool _isSaving = false;
   final _formKey = GlobalKey<FormState>();
@@ -27,6 +28,9 @@ class _NoteEditScreenState extends ConsumerState<NoteEditScreen> {
     _contentController = TextEditingController(
       text: widget.note?.content ?? '',
     );
+    _tagsController = TextEditingController(
+      text: widget.note?.tags.join(', ') ?? '',
+    );
     _isEditing = widget.note != null;
   }
 
@@ -34,6 +38,7 @@ class _NoteEditScreenState extends ConsumerState<NoteEditScreen> {
   void dispose() {
     _titleController.dispose();
     _contentController.dispose();
+    _tagsController.dispose();
     super.dispose();
   }
 
@@ -78,10 +83,18 @@ class _NoteEditScreenState extends ConsumerState<NoteEditScreen> {
       final title = _titleController.text.trim();
       final content = _contentController.text.trim();
 
+      // Parse tags from comma-separated string, trim whitespace, and remove empty tags
+      final tags = _tagsController.text
+          .split(',')
+          .map((tag) => tag.trim())
+          .where((tag) => tag.isNotEmpty)
+          .toList();
+
       final note = Note(
         id: widget.note?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
         title: title,
         content: content,
+        tags: tags,
         createdAt: widget.note?.createdAt ?? DateTime.now(),
         updatedAt: DateTime.now(),
       );
@@ -286,21 +299,69 @@ class _NoteEditScreenState extends ConsumerState<NoteEditScreen> {
                   style: Theme.of(
                     context,
                   ).textTheme.bodyLarge?.copyWith(height: 1.6),
-                  decoration: InputDecoration(
-                    hintText: 'Start writing...',
-                    hintStyle: TextStyle(color: Theme.of(context).hintColor),
-                    border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 8.0),
-                  ),
                   maxLines: null,
                   keyboardType: TextInputType.multiline,
                   autofocus: _titleController.text.isEmpty,
                 ),
+                const SizedBox(height: 24),
+                TextFormField(
+                  controller: _tagsController,
+                  style: Theme.of(context).textTheme.bodyLarge,
+                  decoration: InputDecoration(
+                    hintText:
+                        'Add tags (comma separated, e.g., work, personal, ideas)',
+                    hintStyle: TextStyle(color: Theme.of(context).hintColor),
+                    border: InputBorder.none,
+                    prefixIcon: const Icon(
+                      Icons.local_offer_outlined,
+                      size: 20,
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 8.0),
+                  ),
+                  maxLines: 1,
+                  textInputAction: TextInputAction.done,
+                  onChanged: (value) {
+                    setState(() {}); // Rebuild to update tag chips
+                  },
+                ),
+                if (_tagsController.text.isNotEmpty)
+                  ..._buildTagChips(_tagsController.text),
               ],
             ),
           ),
         ),
       ),
     );
+  }
+
+  List<Widget> _buildTagChips(String tagsText) {
+    final tags = tagsText
+        .split(',')
+        .map((tag) => tag.trim())
+        .where((tag) => tag.isNotEmpty)
+        .toList();
+
+    if (tags.isEmpty) return [];
+
+    return [
+      Wrap(
+        spacing: 8.0,
+        children: tags
+            .map(
+              (tag) => Chip(
+                label: Text(tag),
+                backgroundColor: Theme.of(context).colorScheme.surfaceVariant,
+                labelStyle: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  fontSize: 12,
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+            )
+            .toList(),
+      ),
+      const SizedBox(height: 8),
+    ];
   }
 }

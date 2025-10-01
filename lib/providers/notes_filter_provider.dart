@@ -21,15 +21,29 @@ class NotesFilterNotifier extends StateNotifier<NotesFilterState> {
   void setSortOption(SortOption sortOption) {
     state = state.copyWith(sortOption: sortOption);
   }
+  
+  void updateCategoryFilter(String? categoryId) {
+    state = state.copyWith(categoryId: categoryId);
+  }
 
   List<Note> filterAndSortNotes(List<Note> notes) {
-    // Filter notes based on search query
+    // Filter notes based on search query and category
     var filteredNotes = notes.where((note) {
-      if (state.searchQuery.isEmpty) return true;
+      // Filter by search query
+      if (state.searchQuery.isNotEmpty) {
+        final query = state.searchQuery.toLowerCase();
+        if (!note.title.toLowerCase().contains(query) &&
+            !note.content.toLowerCase().contains(query)) {
+          return false;
+        }
+      }
       
-      final query = state.searchQuery.toLowerCase();
-      return note.title.toLowerCase().contains(query) ||
-          note.content.toLowerCase().contains(query);
+      // Filter by category
+      if (state.categoryId != null && note.categoryId != state.categoryId) {
+        return false;
+      }
+      
+      return true;
     }).toList();
 
     // Sort notes based on sort option
@@ -55,19 +69,23 @@ class NotesFilterNotifier extends StateNotifier<NotesFilterState> {
 class NotesFilterState {
   final String searchQuery;
   final SortOption sortOption;
+  final String? categoryId;
 
   const NotesFilterState({
     this.searchQuery = '',
     this.sortOption = SortOption.newestFirst,
+    this.categoryId,
   });
 
   NotesFilterState copyWith({
     String? searchQuery,
     SortOption? sortOption,
+    String? categoryId,
   }) {
     return NotesFilterState(
       searchQuery: searchQuery ?? this.searchQuery,
       sortOption: sortOption ?? this.sortOption,
+      categoryId: categoryId ?? this.categoryId,
     );
   }
 }

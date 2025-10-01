@@ -2,13 +2,13 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 class SearchBar extends StatefulWidget {
-  final ValueChanged<String> onChanged;
+  final ValueChanged<String>? onChanged;
   final String hintText;
   final Duration debounceDuration;
 
   const SearchBar({
     super.key,
-    required this.onChanged,
+    this.onChanged,
     this.hintText = 'Search notes...',
     this.debounceDuration = const Duration(milliseconds: 300),
   });
@@ -23,18 +23,20 @@ class _SearchBarState extends State<SearchBar> {
   final _focusNode = FocusNode();
 
   void _onSearchChanged(String query) {
+    if (widget.onChanged == null) return;
+    
     if (_debounce?.isActive ?? false) _debounce!.cancel();
     
     _debounce = Timer(widget.debounceDuration, () {
       if (mounted) {
-        widget.onChanged(query);
+        widget.onChanged!(query);
       }
     });
   }
 
   void _clearSearch() {
     _controller.clear();
-    widget.onChanged('');
+    widget.onChanged?.call('');
     _focusNode.unfocus();
   }
 

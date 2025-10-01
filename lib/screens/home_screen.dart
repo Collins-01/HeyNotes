@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../models/note.dart';
+import '../models/category.dart';
 import '../providers/note_provider.dart';
 import '../providers/notes_filter_provider.dart';
+import '../providers/category_provider.dart';
 import '../providers/theme_provider.dart';
 import '../widgets/note_card.dart';
 import '../widgets/search_bar.dart' as custom;
+import '../widgets/category_chip.dart';
+import '../widgets/add_category_modal.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -13,105 +18,171 @@ class HomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final notes = ref.watch(noteProvider);
+    final categories = ref.watch(categoryProvider);
     final filterState = ref.watch(notesFilterProvider);
     
-    // Since noteProvider is a StateNotifierProvider with List<Note>,
-    // we don't need to use .when() here
-    return _buildContent(context, ref, notes, filterState);
+    return _buildContent(context, ref, notes, categories, filterState);
   }
 
-  Widget _buildLoading() {
-    return const Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircularProgressIndicator(),
-            SizedBox(height: 16),
-            Text('Loading your notes...'),
-          ],
-        ),
-      ),
-    );
+  String _getGreeting() {
+    final hour = DateTime.now().hour;
+    if (hour < 12) return 'Good Morning';
+    if (hour < 17) return 'Good Afternoon';
+    return 'Good Evening';
   }
 
   Widget _buildContent(
     BuildContext context,
     WidgetRef ref,
     List<Note> notes,
+    List<Category> categories,
     NotesFilterState filterState,
   ) {
-    // Show loading indicator if notes are being loaded
-    if (notes.isEmpty) {
-      return _buildLoading();
-    }
-    final filteredNotes = ref.watch(filteredNotesProvider(notes));
-    final themeMode = ref.watch(themeProvider);
-    final themeNotifier = ref.read(themeProvider.notifier);
-
+    final theme = Theme.of(context);
+    final greeting = _getGreeting();
+    
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Hey Notes'),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              greeting,
+              style: theme.textTheme.bodyLarge?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              'Hey Notes',
+              style: theme.textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
         actions: [
-          // Theme toggle
           IconButton(
-            icon: Icon(themeMode == ThemeMode.dark 
-                ? Icons.light_mode 
-                : Icons.dark_mode),
+            icon: const Icon(Icons.search),
             onPressed: () {
-              final newTheme = themeMode == ThemeMode.dark 
-                  ? AppThemeMode.light 
-                  : AppThemeMode.dark;
-              themeNotifier.setTheme(newTheme);
+              // TODO: Implement search
             },
-            tooltip: 'Toggle theme',
           ),
-          // Sort menu
-          PopupMenuButton<SortOption>(
-            icon: const Icon(Icons.sort),
-            onSelected: (sortOption) {
-              ref.read(notesFilterProvider.notifier).setSortOption(sortOption);
+          IconButton(
+            icon: Icon(
+              theme.brightness == Brightness.dark
+                  ? Icons.light_mode
+                  : Icons.dark_mode,
+            ),
+            onPressed: () {
+              ref.read(themeProvider.notifier).toggleTheme();
             },
-            itemBuilder: (context) => SortOption.values.map((option) {
-              return PopupMenuItem<SortOption>(
-                value: option,
-                child: Row(
-                  children: [
-                    if (filterState.sortOption == option)
-                      Icon(Icons.check, color: Theme.of(context).primaryColor),
-                    const SizedBox(width: 8),
-                    Text(option.label),
-                  ],
-                ),
-              );
-            }).toList(),
           ),
         ],
       ),
       body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Search bar
-          Padding(
-            padding: const EdgeInsets.all(16.0),
+          // Search Bar
+          const Padding(
+            padding: EdgeInsets.all(16.0),
             child: custom.SearchBar(
-              onChanged: (query) {
-                ref.read(notesFilterProvider.notifier).setSearchQuery(query);
-              },
+              hintText: 'Search notes...',
             ),
           ),
-          // Notes list
+          
+          // Categories Section
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Categories',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        showAddCategoryModal(context);
+                      },
+                      child: const Text('+ Add'),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                SizedBox(
+                  height: 40,
+                  child: ListView(
+                    scrollDirection: Axis.horizontal,
+                    children: [
+                      // All category
+                      CategoryChip(
+                        label: 'All',
+                        isSelected: filterState.categoryId == null,
+                        onSelected: () {
+                          ref.read(notesFilterProvider.notifier).updateCategoryFilter(null);
+                        },
+                      ),
+                      
+                      // Other categories
+                      ...categories.map((category) => CategoryChip(
+                        label: category.name,
+                        isSelected: filterState.categoryId == category.id,
+                        onSelected: () {
+                          ref.read(notesFilterProvider.notifier).updateCategoryFilter(category.id);
+                        },
+                        backgroundColor: Color(category.color),
+                      )).toList(),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          
+          // Notes Grid
           Expanded(
-            child: filteredNotes.isEmpty
+            child: notes.isEmpty
                 ? Center(
-                    child: filterState.searchQuery.isNotEmpty
-                        ? const Text('No matching notes found')
-                        : const Text('No notes yet. Tap + to create one!'),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.note_add_outlined,
+                          size: 64,
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'No notes yet',
+                          style: theme.textTheme.titleMedium,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Tap + to create your first note',
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ),
                   )
-                : ListView.builder(
-                    padding: const EdgeInsets.only(bottom: 80),
-                    itemCount: filteredNotes.length,
+                : GridView.builder(
+                    padding: const EdgeInsets.all(16),
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      crossAxisSpacing: 12,
+                      mainAxisSpacing: 12,
+                      childAspectRatio: 1,
+                    ),
+                    itemCount: notes.length,
                     itemBuilder: (context, index) {
-                      final note = filteredNotes[index];
+                      final note = notes[index];
                       return NoteCard(
                         note: note,
                         onTap: () {

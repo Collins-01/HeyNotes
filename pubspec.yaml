@@ -34,13 +34,13 @@ dependencies:
   # Local Storage
   hive: ^2.2.3
   hive_flutter: ^1.1.0
-  
   # Utilities
   path_provider: ^2.1.1
   shared_preferences: ^2.2.2
   intl: ^0.19.0
   share_plus: ^7.2.1
-  google_fonts: ^6.1.0
+  google_fonts: ^6.1.0 # Kept for fallback if needed, but Avenir is primary
+  uuid: ^4.2.2
   path: ^1.8.3
   permission_handler: ^11.3.0
   pdf: ^3.10.8
@@ -48,7 +48,6 @@ dependencies:
 
 dev_dependencies:
   flutter_test:
-    sdk: flutter
   flutter_lints: ^5.0.0
   hive_generator: ^2.0.1
   build_runner: ^2.4.7

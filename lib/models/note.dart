@@ -21,6 +21,9 @@ class Note extends HiveObject {
   
   @HiveField(5, defaultValue: const [])
   List<String> tags;
+  
+  @HiveField(6)
+  String? categoryId;
 
   Note({
     required this.id,
@@ -29,6 +32,7 @@ class Note extends HiveObject {
     required this.createdAt,
     required this.updatedAt,
     List<String>? tags,
+    this.categoryId,
   }) : tags = tags ?? [];
   
   // Create a copyWith method for easy updates
@@ -39,6 +43,7 @@ class Note extends HiveObject {
     DateTime? createdAt,
     DateTime? updatedAt,
     List<String>? tags,
+    String? categoryId,
   }) {
     return Note(
       id: id ?? this.id,
@@ -47,6 +52,7 @@ class Note extends HiveObject {
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? DateTime.now(),
       tags: tags ?? this.tags,
+      categoryId: categoryId ?? this.categoryId,
     );
   }
 }

@@ -5,12 +5,12 @@ import '../widgets/note_card.dart';
 import 'note_edit_screen.dart';
 
 class HomeScreen extends ConsumerWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final notes = ref.watch(noteProvider);
-    
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Hey Notes'),
@@ -24,9 +24,7 @@ class HomeScreen extends ConsumerWidget {
         ],
       ),
       body: notes.isEmpty
-          ? const Center(
-              child: Text('No notes yet. Tap + to create one!'),
-            )
+          ? const Center(child: Text('No notes yet. Tap + to create one!'))
           : ListView.builder(
               itemCount: notes.length,
               itemBuilder: (context, index) {
@@ -48,9 +46,7 @@ class HomeScreen extends ConsumerWidget {
         onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(
-              builder: (context) => const NoteEditScreen(),
-            ),
+            MaterialPageRoute(builder: (context) => const NoteEditScreen()),
           );
         },
         child: const Icon(Icons.add),

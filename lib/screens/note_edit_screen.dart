@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/note.dart';
 import '../providers/note_provider.dart';
+import 'package:intl/intl.dart';
 
 class NoteEditScreen extends ConsumerStatefulWidget {
   final Note? note;
@@ -66,23 +67,31 @@ class _NoteEditScreenState extends ConsumerState<NoteEditScreen> {
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async {
-        await _saveNote();
+        // Only save if there's content
+        if (_titleController.text.trim().isNotEmpty || 
+            _contentController.text.trim().isNotEmpty) {
+          await _saveNote();
+        }
         return true;
       },
       child: Scaffold(
         appBar: AppBar(
           title: Text(_isEditing ? 'Edit Note' : 'New Note'),
           actions: [
+            IconButton(
+              icon: const Icon(Icons.save),
+              onPressed: _saveNote,
+            ),
             if (_isEditing)
               IconButton(
-                icon: const Icon(Icons.delete),
+                icon: const Icon(Icons.delete_outline),
                 onPressed: () async {
                   final shouldDelete = await showDialog<bool>(
                     context: context,
                     builder: (context) => AlertDialog(
                       title: const Text('Delete Note'),
                       content: const Text(
-                        'Are you sure you want to delete this note?',
+                        'Are you sure you want to delete this note? This action cannot be undone.',
                       ),
                       actions: [
                         TextButton(
@@ -91,6 +100,9 @@ class _NoteEditScreenState extends ConsumerState<NoteEditScreen> {
                         ),
                         TextButton(
                           onPressed: () => Navigator.pop(context, true),
+                          style: TextButton.styleFrom(
+                            foregroundColor: Theme.of(context).colorScheme.error,
+                          ),
                           child: const Text('DELETE'),
                         ),
                       ],
@@ -112,26 +124,50 @@ class _NoteEditScreenState extends ConsumerState<NoteEditScreen> {
         body: SingleChildScrollView(
           padding: const EdgeInsets.all(16.0),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              if (_isEditing && widget.note != null) ...[
+                Text(
+                  'Last updated: ${DateFormat.yMMMd().add_jm().format(widget.note!.updatedAt)}',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.7),
+                  ),
+                ),
+                const SizedBox(height: 8),
+              ],
               TextField(
                 controller: _titleController,
-                style: Theme.of(context).textTheme.titleMedium,
-                decoration: const InputDecoration(
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+                decoration: InputDecoration(
                   hintText: 'Title',
+                  hintStyle: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    color: Theme.of(context).hintColor,
+                    fontWeight: FontWeight.bold,
+                  ),
                   border: InputBorder.none,
                 ),
-                maxLines: 1,
+                maxLines: null,
+                textInputAction: TextInputAction.next,
               ),
-              const Divider(),
+              const Divider(height: 1),
+              const SizedBox(height: 8),
               TextField(
                 controller: _contentController,
-                style: Theme.of(context).textTheme.bodyMedium,
-                decoration: const InputDecoration(
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  height: 1.6,
+                ),
+                decoration: InputDecoration(
                   hintText: 'Start writing...',
+                  hintStyle: TextStyle(
+                    color: Theme.of(context).hintColor,
+                  ),
                   border: InputBorder.none,
                 ),
                 maxLines: null,
                 keyboardType: TextInputType.multiline,
+                autofocus: _titleController.text.isEmpty,
               ),
             ],
           ),

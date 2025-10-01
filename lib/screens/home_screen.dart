@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/note_provider.dart';
 import '../widgets/note_card.dart';
-import 'note_edit_screen.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -32,22 +31,18 @@ class HomeScreen extends ConsumerWidget {
                 return NoteCard(
                   note: note,
                   onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => NoteEditScreen(note: note),
-                      ),
-                    );
+                    Navigator.pushNamed(
+                    context,
+                    '/view',
+                    arguments: note,
+                  );
                   },
                 );
               },
             ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const NoteEditScreen()),
-          );
+          Navigator.pushNamed(context, '/edit');
         },
         child: const Icon(Icons.add),
       ),

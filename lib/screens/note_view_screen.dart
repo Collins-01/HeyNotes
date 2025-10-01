@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:hey_notes/screens/note_edit_screen.dart';
 import 'package:intl/intl.dart';
 import '../models/note.dart';
 
@@ -17,11 +16,10 @@ class NoteViewScreen extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.edit),
             onPressed: () {
-              Navigator.pushReplacement(
+              Navigator.pushReplacementNamed(
                 context,
-                MaterialPageRoute(
-                  builder: (context) => NoteEditScreen(note: note),
-                ),
+                '/edit',
+                arguments: note,
               );
             },
           ),
@@ -32,15 +30,35 @@ class NoteViewScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(note.title, style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: 8),
+            if (note.title.isNotEmpty) ...[
+              Text(
+                note.title,
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 8),
+            ],
             Text(
-              DateFormat.yMMMd().add_jm().format(note.updatedAt),
-              style: Theme.of(context).textTheme.bodySmall,
+              'Last updated: ${DateFormat.yMMMd().add_jm().format(note.updatedAt)}',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.7),
+              ),
             ),
-            const Divider(),
             const SizedBox(height: 16),
-            Text(note.content, style: Theme.of(context).textTheme.bodyMedium),
+            if (note.content.isNotEmpty) ...[
+              Text(
+                note.content,
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  height: 1.6,
+                ),
+              ),
+            ] else ...[
+              const Text(
+                'No content',
+                style: TextStyle(fontStyle: FontStyle.italic, color: Colors.grey),
+              ),
+            ],
           ],
         ),
       ),

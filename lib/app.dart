@@ -1,6 +1,49 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'core/navigation/navigation_service.dart';
+import 'core/theme/app_theme.dart';
+import 'models/note.dart';
 import 'screens/home_screen.dart';
+import 'screens/note_edit_screen.dart';
+import 'screens/note_view_screen.dart';
+
+class AppRoutes {
+  static const String home = '/';
+  static const String noteView = '/view';
+  static const String noteEdit = '/edit';
+}
+
+class AppRouter {
+  static Route<dynamic> generateRoute(RouteSettings settings) {
+    switch (settings.name) {
+      case AppRoutes.home:
+        return MaterialPageRoute(builder: (_) => const HomeScreen());
+      case AppRoutes.noteView:
+        final note = settings.arguments as Note?;
+        if (note == null) {
+          return _errorRoute('Note not found');
+        }
+        return MaterialPageRoute(
+          builder: (_) => NoteViewScreen(note: note),
+        );
+      case AppRoutes.noteEdit:
+        final note = settings.arguments as Note?;
+        return MaterialPageRoute(
+          builder: (_) => NoteEditScreen(note: note),
+        );
+      default:
+        return _errorRoute('Route not found');
+    }
+  }
+
+  static Route<dynamic> _errorRoute(String message) {
+    return MaterialPageRoute(
+      builder: (_) => Scaffold(
+        body: Center(child: Text(message)),
+      ),
+    );
+  }
+}
 
 class App extends StatelessWidget {
   const App({super.key});
@@ -10,17 +53,13 @@ class App extends StatelessWidget {
     return ProviderScope(
       child: MaterialApp(
         title: 'Hey Notes',
-        theme: ThemeData(
-          primarySwatch: Colors.blue,
-          visualDensity: VisualDensity.adaptivePlatformDensity,
-          appBarTheme: const AppBarTheme(elevation: 0, centerTitle: true),
-        ),
-        darkTheme: ThemeData.dark().copyWith(
-          appBarTheme: const AppBarTheme(elevation: 0, centerTitle: true),
-        ),
-        themeMode: ThemeMode.system,
-        home: const HomeScreen(),
         debugShowCheckedModeBanner: false,
+        theme: AppTheme.lightTheme,
+        darkTheme: AppTheme.darkTheme,
+        themeMode: ThemeMode.system,
+        navigatorKey: NavigationService.navigatorKey,
+        onGenerateRoute: AppRouter.generateRoute,
+        initialRoute: AppRoutes.home,
       ),
     );
   }

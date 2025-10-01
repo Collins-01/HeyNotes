@@ -45,5 +45,17 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	
+	<!-- File Sharing Support -->
+	<key>UIFileSharingEnabled</key>
+	<true/>
+	<key>LSSupportsOpeningDocumentsInPlace</key>
+	<true/>
+	<key>NSDocumentsFolderUsageDescription</key>
+	<string>We need access to save and share your notes as files</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>We need access to save exported files to your photo library</string>
+	<key>NSCameraUsageDescription</key>
+	<string>We need camera access to take photos for your notes</string>
 </dict>
 </plist>

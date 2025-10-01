@@ -3,10 +3,26 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/navigation/navigation_service.dart';
 import 'core/theme/app_theme.dart';
 import 'models/note.dart';
-import 'providers/theme_provider.dart';
 import 'screens/home_screen.dart';
 import 'screens/note_edit_screen.dart';
 import 'screens/note_view_screen.dart';
+
+// Theme Provider
+final themeProvider = StateNotifierProvider<ThemeNotifier, ThemeMode>((ref) {
+  return ThemeNotifier();
+});
+
+class ThemeNotifier extends StateNotifier<ThemeMode> {
+  ThemeNotifier() : super(ThemeMode.system);
+
+  void toggleTheme() {
+    state = state == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
+  }
+
+  void setTheme(ThemeMode mode) {
+    state = mode;
+  }
+}
 
 class AppRoutes {
   static const String home = '/';
@@ -55,12 +71,11 @@ class App extends StatelessWidget {
       child: Consumer(
         builder: (context, ref, _) {
           final themeMode = ref.watch(themeProvider);
-          final themeData = ref.watch(themeDataProvider);
           
           return MaterialApp(
             title: 'Hey Notes',
             debugShowCheckedModeBanner: false,
-            theme: themeData,
+            theme: AppTheme.lightTheme,
             darkTheme: AppTheme.darkTheme,
             themeMode: themeMode,
             navigatorKey: NavigationService.navigatorKey,

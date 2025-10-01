@@ -12,22 +12,27 @@ class HomeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final notesAsync = ref.watch(noteProvider);
+    final notes = ref.watch(noteProvider);
     final filterState = ref.watch(notesFilterProvider);
-
-    return notesAsync.when(
-      loading: () => _buildLoading(),
-      error: (error, stack) => _buildError(error),
-      data: (notes) => _buildContent(context, ref, notes, filterState),
-    );
+    
+    // Since noteProvider is a StateNotifierProvider with List<Note>,
+    // we don't need to use .when() here
+    return _buildContent(context, ref, notes, filterState);
   }
 
   Widget _buildLoading() {
-    return const Scaffold(body: Center(child: CircularProgressIndicator()));
-  }
-
-  Widget _buildError(dynamic error) {
-    return Scaffold(body: Center(child: Text('Error: $error')));
+    return const Scaffold(
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(height: 16),
+            Text('Loading your notes...'),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _buildContent(
@@ -36,6 +41,10 @@ class HomeScreen extends ConsumerWidget {
     List<Note> notes,
     NotesFilterState filterState,
   ) {
+    // Show loading indicator if notes are being loaded
+    if (notes.isEmpty) {
+      return _buildLoading();
+    }
     final filteredNotes = ref.watch(filteredNotesProvider(notes));
     final themeMode = ref.watch(themeProvider);
     final themeNotifier = ref.read(themeProvider.notifier);

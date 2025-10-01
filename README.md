@@ -26,7 +26,7 @@ A beautiful and intuitive note-taking app built with Flutter. Organize your thou
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-username/hey_notes.git
+   git clone https://github.com/Collins-01/hey_notes.git
    cd hey_notes
    ```
 
@@ -103,9 +103,3 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🙏 Acknowledgments
-
-- Flutter Team for the amazing framework
-- Hive for fast and efficient local storage
-- Riverpod for state management
-- All the amazing package developers whose work made this app possible

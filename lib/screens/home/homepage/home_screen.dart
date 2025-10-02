@@ -8,6 +8,7 @@ import 'package:hey_notes/core/utils/ui_helpers.dart';
 import 'package:hey_notes/extension/extension.dart';
 import 'package:hey_notes/models/note.dart';
 import 'package:hey_notes/providers/category_provider.dart';
+import 'package:hey_notes/screens/home/components/category_button.dart';
 import 'package:hey_notes/screens/home/homepage/homepage_viewmodel.dart';
 import 'package:hey_notes/screens/notes_page/note_view_screen.dart';
 
@@ -170,27 +171,34 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               },
             ),
           ),
-          // Visibility(
-          //   visible: categories.isNotEmpty,
-          //   child: SizedBox(
-          //     height: 50,
-          //     width: double.infinity,
-          //     child: SingleChildScrollView(
-          //       scrollDirection: Axis.horizontal,
-          //       child: Row(
-          //         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          //         children: [
-          //           ...categories.map(
-          //             (category) => CategoryButton(
-          //               category: category,
-          //               isSelected: state.selectedCategoryID == category.id,
-          //             ),
-          //           ),
-          //         ],
-          //       ),
-          //     ),
-          //   ),
-          // ),
+          const Gap(UIHelpers.lg),
+          Visibility(
+            visible: categories.isNotEmpty,
+            child: Padding(
+              padding: const EdgeInsets.only(left: UIHelpers.scaffoldPadding),
+              child: SizedBox(
+                height: 50,
+                width: double.infinity,
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      ...categories.map(
+                        (category) => CategoryButton(
+                          onTap: () {
+                            vm.setCategory(category.id);
+                          },
+                          category: category,
+                          isSelected: state.selectedCategoryID == category.id,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
           // if (state.notes.isNotEmpty) ...[
           //   Expanded(
           //     child: GridView.builder(
@@ -213,9 +221,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: AppColors.black,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
+        foregroundColor: AppColors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         onPressed: () {
           Navigator.push(
             context,

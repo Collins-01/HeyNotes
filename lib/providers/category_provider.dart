@@ -25,17 +25,16 @@ class CategoryNotifier extends StateNotifier<List<Category>> {
     final newCategory = Category(
       id: const Uuid().v4(),
       name: name,
-      color: color,
     );
 
     await _hiveService.saveCategory(newCategory);
     state = _hiveService.getAllCategories();
   }
 
-  Future<void> updateCategory(String id, String name, int color) async {
+  Future<void> updateCategory(String id, String name) async {
     final category = _hiveService.getCategory(id);
     if (category != null) {
-      final updatedCategory = category.copyWith(name: name, color: color);
+      final updatedCategory = category.copyWith(name: name);
       await _hiveService.saveCategory(updatedCategory);
       state = _hiveService.getAllCategories();
     }

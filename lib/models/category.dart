@@ -6,28 +6,20 @@ part 'category.g.dart';
 class Category extends HiveObject {
   @HiveField(0)
   final String id;
-  
+
   @HiveField(1)
   String name;
-  
+
   @HiveField(2)
-  int color;
-  
-  @HiveField(3)
   final DateTime createdAt;
 
-  Category({
-    required this.id,
-    required this.name,
-    required this.color,
-    DateTime? createdAt,
-  }) : createdAt = createdAt ?? DateTime.now();
+  Category({required this.id, required this.name, DateTime? createdAt})
+    : createdAt = createdAt ?? DateTime.now();
 
   Map<String, dynamic> toMap() {
     return {
       'id': id,
       'name': name,
-      'color': color,
       'createdAt': createdAt.millisecondsSinceEpoch,
     };
   }
@@ -36,21 +28,14 @@ class Category extends HiveObject {
     return Category(
       id: map['id'],
       name: map['name'],
-      color: map['color'],
       createdAt: DateTime.fromMillisecondsSinceEpoch(map['createdAt']),
     );
   }
 
-  Category copyWith({
-    String? id,
-    String? name,
-    int? color,
-    DateTime? createdAt,
-  }) {
+  Category copyWith({String? id, String? name, DateTime? createdAt}) {
     return Category(
       id: id ?? this.id,
       name: name ?? this.name,
-      color: color ?? this.color,
       createdAt: createdAt ?? this.createdAt,
     );
   }

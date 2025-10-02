@@ -1,5 +1,6 @@
 import 'package:hive/hive.dart';
 import 'package:hey_notes/models/category.dart';
+import 'package:uuid/uuid.dart';
 
 class CategoryService {
   static const String _boxName = 'categories';
@@ -10,6 +11,30 @@ class CategoryService {
       Hive.registerAdapter(CategoryAdapter());
     }
     _categoriesBox = await Hive.openBox<Category>(_boxName);
+
+    // Add default categories if the box is empty
+    if (_categoriesBox.isEmpty) {
+      await _addDefaultCategories();
+    }
+  }
+
+  Future<void> _addDefaultCategories() async {
+    final defaultCategories = [
+      Category(id: const Uuid().v4(), name: 'Personal'),
+      Category(id: const Uuid().v4(), name: 'Work'),
+      Category(id: const Uuid().v4(), name: 'Ideas'),
+      Category(id: const Uuid().v4(), name: 'To Do'),
+      Category(id: const Uuid().v4(), name: 'Shopping'),
+      Category(id: const Uuid().v4(), name: 'Meetings'),
+      Category(id: const Uuid().v4(), name: 'Projects'),
+      Category(id: const Uuid().v4(), name: 'Learning'),
+      Category(id: const Uuid().v4(), name: 'Recipes'),
+      Category(id: const Uuid().v4(), name: 'Travel'),
+    ];
+
+    await _categoriesBox.putAll({
+      for (var category in defaultCategories) category.id: category,
+    });
   }
 
   // Add or update a category

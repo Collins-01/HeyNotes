@@ -29,6 +29,10 @@ class HomepageViewmodel extends StateNotifier<HomepageState> {
         .toList();
     state = state.copyWith(notes: filteredNotes);
   }
+
+  void setCategory(String id) {
+    state = state.copyWith(selectedCategoryID: id);
+  }
 }
 
 final homepageViewModelProvider =

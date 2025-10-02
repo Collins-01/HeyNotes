@@ -9,6 +9,7 @@ import 'package:hey_notes/extension/extension.dart';
 import 'package:hey_notes/models/note.dart';
 import 'package:hey_notes/providers/category_provider.dart';
 import 'package:hey_notes/screens/home/components/category_button.dart';
+import 'package:hey_notes/screens/home/components/notes_card.dart';
 import 'package:hey_notes/screens/home/homepage/homepage_viewmodel.dart';
 import 'package:hey_notes/screens/notes_page/note_view_screen.dart';
 
@@ -30,6 +31,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   void initState() {
     super.initState();
     _searchController = TextEditingController();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(homepageViewModelProvider.notifier).onInit();
+    });
   }
 
   @override
@@ -199,24 +203,31 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
             ),
           ),
-          // if (state.notes.isNotEmpty) ...[
-          //   Expanded(
-          //     child: GridView.builder(
-          //       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          //         crossAxisCount: 2,
-          //         mainAxisSpacing: 8,
-          //         crossAxisSpacing: 8,
-          //         childAspectRatio: 8,
-          //         mainAxisExtent: 8,
-          //       ),
-          //       padding: const EdgeInsets.all(8.0),
-          //       itemBuilder: (context, index) {
-          //         final note = state.notes[index];
-          //         return NoteCard(note: note);
-          //       },
-          //     ),
-          //   ),
-          // ],
+          if (state.notes.isNotEmpty) ...[
+            const Gap(UIHelpers.lg),
+            Expanded(
+              child: GridView.builder(
+                itemCount: state.notes.length,
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  mainAxisSpacing: 12,
+                  crossAxisSpacing: 12,
+                  childAspectRatio:
+                      0.8, // Adjust this value to control the width/height ratio
+                  mainAxisExtent: 200, // Fixed height of 200 logical pixels
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
+                // padding: const EdgeInsets.all(8.0),
+                itemBuilder: (context, index) {
+                  final note = state.notes[index];
+                  return NoteCard(note: note);
+                },
+              ),
+            ),
+          ],
         ],
       ),
       floatingActionButton: FloatingActionButton(

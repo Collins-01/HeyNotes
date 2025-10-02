@@ -62,21 +62,9 @@ class _NoteViewScreenState extends ConsumerState<NoteViewScreen> {
   @override
   void initState() {
     super.initState();
-    _controller.document.insert(0, '''
-          Psychology
-
-          Examples/Diagrams:
-          • Classical Conditioning Example
-          Pavlov's dog experiment: Associating a bell (neutral stimulus) with food (unconditioned stimulus) leads to the dog salivating (unconditioned response). Eventually, the bell alone elicits salivation (conditioned response).
-          • Cognitive Process Diagram
-          Input (Sensory Information) → Processing (Attention, Perception, Memory) → Output (Behavioral Response)
-
-          Questions/Clarifications:
-          Question 1: How does behaviorism differ from cognitive psychology?
-          Answer: Behaviorism focuses on observable behavior, while cognitive psychology investigates mental processes
-
-          • Researchers often use case studies,
-          ''');
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _controller.document.insert(0, widget.note.content);
+    });
   }
 
   Future<void> _deleteNote(BuildContext context, WidgetRef ref) async {

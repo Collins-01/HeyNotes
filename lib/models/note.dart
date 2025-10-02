@@ -81,6 +81,8 @@ class Note extends HiveObject {
     DateTime? updatedAt,
     List<String>? tags,
     String? categoryId,
+
+    /// #FF9E9E
     String? color,
     bool? isPinned,
   }) {
@@ -97,5 +99,32 @@ class Note extends HiveObject {
     );
   }
 
-  Color get parsedColor => Color(int.parse('0xFF$color'));
+  /// Converts the hex color string (e.g., '#FF9E9E') to a Flutter Color
+  /// Returns a default color if the color string is invalid
+  Color get parsedColor {
+    if (color == null || color!.isEmpty) return Colors.grey.shade200;
+    try {
+      // Remove '#' if present and ensure it's a valid hex color
+      String hexColor = color!;
+      if (hexColor.startsWith('#')) {
+        hexColor = hexColor.substring(1);
+      }
+      // Handle 3-digit hex codes by expanding them to 6 digits
+      if (hexColor.length == 3) {
+        hexColor = hexColor.split('').map((c) => c * 2).join();
+      }
+      // Handle 6-digit hex codes by adding full opacity (FF)
+      if (hexColor.length == 6) {
+        hexColor = 'FF$hexColor';
+      }
+      return Color(int.parse(hexColor, radix: 16));
+    } catch (e) {
+      return Colors.grey.shade200; // Return a default color on error
+    }
+  }
+
+  /// Converts a Flutter Color to a hex string (e.g., '#FF9E9E')
+  static String colorToHex(Color color) {
+    return '#${color.value.toRadixString(16).substring(2).toUpperCase()}';
+  }
 }

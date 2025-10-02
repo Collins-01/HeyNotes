@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'app_colors.dart';
 
 class AppTheme {
@@ -10,108 +11,110 @@ class AppTheme {
   static const double _inputPadding = 16.0;
   static const double _appBarElevation = 0.0;
   static const double _cardElevation = 1.0;
-  
-  // Text theme with Avenir font
+
+  // Text theme with Montserrat from Google Fonts
   static TextTheme _buildTextTheme() {
-    return const TextTheme(
-      // Display styles
-      displayLarge: TextStyle(
-        fontSize: 32,
-        fontWeight: FontWeight.w700,
-        height: 1.2,
-        letterSpacing: -0.5,
+    return GoogleFonts.montserratTextTheme(
+      const TextTheme(
+        // Display styles
+        displayLarge: TextStyle(
+          fontSize: 32,
+          fontWeight: FontWeight.w700,
+          height: 1.2,
+          letterSpacing: -0.5,
+        ),
+        displayMedium: TextStyle(
+          fontSize: 28,
+          fontWeight: FontWeight.w600,
+          height: 1.25,
+          letterSpacing: -0.25,
+        ),
+        displaySmall: TextStyle(
+          fontSize: 24,
+          fontWeight: FontWeight.w600,
+          height: 1.3,
+        ),
+
+        // Headline styles
+        headlineLarge: TextStyle(
+          fontSize: 22,
+          fontWeight: FontWeight.w700,
+          height: 1.35,
+        ),
+        headlineMedium: TextStyle(
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
+          height: 1.4,
+        ),
+        headlineSmall: TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.w600,
+          height: 1.45,
+        ),
+
+        // Title styles
+        titleLarge: TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.w500,
+          height: 1.45,
+        ),
+        titleMedium: TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.w500,
+          height: 1.5,
+          letterSpacing: 0.15,
+        ),
+        titleSmall: TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+          height: 1.5,
+          letterSpacing: 0.1,
+        ),
+
+        // Body styles
+        bodyLarge: TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.w400,
+          height: 1.5,
+          letterSpacing: 0.15,
+        ),
+        bodyMedium: TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w400,
+          height: 1.5,
+          letterSpacing: 0.25,
+        ),
+        bodySmall: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w400,
+          height: 1.5,
+          letterSpacing: 0.4,
+        ),
+
+        // Label styles
+        labelLarge: TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+          height: 1.5,
+          letterSpacing: 0.5,
+        ),
+        labelMedium: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w500,
+          height: 1.5,
+          letterSpacing: 0.5,
+        ),
+        labelSmall: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w500,
+          height: 1.5,
+          letterSpacing: 0.5,
+        ),
+      ).apply(
+        fontFamily: 'Avenir',
+        displayColor: AppColors.black,
+        bodyColor: AppColors.darkGrey,
       ),
-      displayMedium: TextStyle(
-        fontSize: 28,
-        fontWeight: FontWeight.w600,
-        height: 1.25,
-        letterSpacing: -0.25,
-      ),
-      displaySmall: TextStyle(
-        fontSize: 24,
-        fontWeight: FontWeight.w600,
-        height: 1.3,
-      ),
-      
-      // Headline styles
-      headlineLarge: TextStyle(
-        fontSize: 22,
-        fontWeight: FontWeight.w700,
-        height: 1.35,
-      ),
-      headlineMedium: TextStyle(
-        fontSize: 20,
-        fontWeight: FontWeight.w600,
-        height: 1.4,
-      ),
-      headlineSmall: TextStyle(
-        fontSize: 18,
-        fontWeight: FontWeight.w600,
-        height: 1.45,
-      ),
-      
-      // Title styles
-      titleLarge: TextStyle(
-        fontSize: 18,
-        fontWeight: FontWeight.w500,
-        height: 1.45,
-      ),
-      titleMedium: TextStyle(
-        fontSize: 16,
-        fontWeight: FontWeight.w500,
-        height: 1.5,
-        letterSpacing: 0.15,
-      ),
-      titleSmall: TextStyle(
-        fontSize: 14,
-        fontWeight: FontWeight.w500,
-        height: 1.5,
-        letterSpacing: 0.1,
-      ),
-      
-      // Body styles
-      bodyLarge: TextStyle(
-        fontSize: 16,
-        fontWeight: FontWeight.w400,
-        height: 1.5,
-        letterSpacing: 0.15,
-      ),
-      bodyMedium: TextStyle(
-        fontSize: 14,
-        fontWeight: FontWeight.w400,
-        height: 1.5,
-        letterSpacing: 0.25,
-      ),
-      bodySmall: TextStyle(
-        fontSize: 12,
-        fontWeight: FontWeight.w400,
-        height: 1.5,
-        letterSpacing: 0.4,
-      ),
-      
-      // Label styles
-      labelLarge: TextStyle(
-        fontSize: 14,
-        fontWeight: FontWeight.w500,
-        height: 1.5,
-        letterSpacing: 0.5,
-      ),
-      labelMedium: TextStyle(
-        fontSize: 12,
-        fontWeight: FontWeight.w500,
-        height: 1.5,
-        letterSpacing: 0.5,
-      ),
-      labelSmall: TextStyle(
-        fontSize: 11,
-        fontWeight: FontWeight.w500,
-        height: 1.5,
-        letterSpacing: 0.5,
-      ),
-    ).apply(
-      fontFamily: 'Avenir',
-      displayColor: AppColors.black,
-      bodyColor: AppColors.darkGrey,
     );
   }
 
@@ -122,19 +125,21 @@ class AppTheme {
   }) {
     final isDark = colorScheme.brightness == Brightness.dark;
     final textTheme = _buildTextTheme();
-    
+
     return ThemeData(
       useMaterial3: true,
       colorScheme: colorScheme,
       primaryColor: primaryColor,
-      scaffoldBackgroundColor: isDark ? AppColors.darkGrey : AppColors.background,
+      scaffoldBackgroundColor: isDark
+          ? AppColors.darkGrey
+          : AppColors.background,
       canvasColor: isDark ? AppColors.darkGrey : AppColors.white,
       cardColor: isDark ? const Color(0xFF1E1E1E) : AppColors.white,
-      
+
       // Text Theme
       textTheme: textTheme,
       primaryTextTheme: textTheme,
-      
+
       // App Bar Theme
       appBarTheme: AppBarTheme(
         elevation: _appBarElevation,
@@ -148,7 +153,7 @@ class AppTheme {
           color: isDark ? AppColors.white : AppColors.black,
         ),
       ),
-      
+
       // Card Theme
       cardTheme: CardThemeData(
         elevation: _cardElevation,
@@ -158,7 +163,7 @@ class AppTheme {
         color: isDark ? const Color(0xFF1E1E1E) : AppColors.white,
         margin: EdgeInsets.zero,
       ),
-      
+
       // Input Decoration Theme
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
@@ -183,17 +188,11 @@ class AppTheme {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(_borderRadius),
-          borderSide: BorderSide(
-            color: primaryColor,
-            width: 2.0,
-          ),
+          borderSide: BorderSide(color: primaryColor, width: 2.0),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(_borderRadius),
-          borderSide: const BorderSide(
-            color: AppColors.error,
-            width: 1.0,
-          ),
+          borderSide: const BorderSide(color: AppColors.error, width: 1.0),
         ),
         hintStyle: textTheme.bodyMedium?.copyWith(
           color: isDark ? Colors.grey[500] : AppColors.mediumGrey,
@@ -202,7 +201,7 @@ class AppTheme {
           color: isDark ? Colors.grey[400] : AppColors.mediumGrey,
         ),
       ),
-      
+
       // Button Themes
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
@@ -222,7 +221,7 @@ class AppTheme {
           ),
         ),
       ),
-      
+
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           padding: const EdgeInsets.symmetric(
@@ -239,7 +238,7 @@ class AppTheme {
           foregroundColor: isDark ? AppColors.white : AppColors.darkGrey,
         ),
       ),
-      
+
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           padding: const EdgeInsets.symmetric(
@@ -253,14 +252,14 @@ class AppTheme {
           ),
         ),
       ),
-      
+
       // Divider Theme
       dividerTheme: DividerThemeData(
         color: isDark ? Colors.grey[800] : AppColors.lightGrey,
         thickness: 1,
         space: 1,
       ),
-      
+
       // Floating Action Button Theme
       floatingActionButtonTheme: FloatingActionButtonThemeData(
         backgroundColor: primaryColor,
@@ -270,7 +269,7 @@ class AppTheme {
           borderRadius: BorderRadius.circular(_borderRadius * 2),
         ),
       ),
-      
+
       // Bottom Navigation Bar Theme
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
         backgroundColor: isDark ? AppColors.darkGrey : AppColors.white,
@@ -281,7 +280,7 @@ class AppTheme {
         showSelectedLabels: true,
         showUnselectedLabels: true,
       ),
-      
+
       // Chip Theme
       chipTheme: ChipThemeData(
         backgroundColor: isDark ? Colors.grey[800]! : const Color(0xFFF5F5F5),

@@ -5,8 +5,7 @@ class StorageService {
   static const String _notesBox = 'notes_box';
   
   static Future<void> init() async {
-    await Hive.initFlutter();
-    Hive.registerAdapter(NoteAdapter());
+    // Hive initialization and adapter registration is now handled in main.dart
     await Hive.openBox<Note>(_notesBox);
   }
   

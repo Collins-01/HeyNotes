@@ -1,27 +1,29 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hey_notes/core/services/notes_service.dart';
+import 'package:hey_notes/service_locator.dart';
 import '../models/note.dart';
 
 final noteProvider = StateNotifierProvider<NoteNotifier, List<Note>>((ref) {
-  return NoteNotifier();
+  return NoteNotifier(sl<NotesService>());
 });
 
 class NoteNotifier extends StateNotifier<List<Note>> {
-  NoteNotifier() : super([]) {
+  final NotesService _notesService;
+  NoteNotifier(this._notesService) : super([]) {
     loadNotes();
   }
 
   Future<void> loadNotes() async {
-    state = NotesService.getAllNotes();
+    state = _notesService.getAllNotes();
   }
 
   Future<void> addNote(Note note) async {
-    await NotesService.addNote(note);
+    await _notesService.addNote(note);
     state = [...state, note];
   }
 
   Future<void> updateNote(Note updatedNote) async {
-    await NotesService.updateNote(updatedNote);
+    await _notesService.updateNote(updatedNote);
     state = [
       for (final note in state)
         if (note.id == updatedNote.id) updatedNote else note,
@@ -29,7 +31,7 @@ class NoteNotifier extends StateNotifier<List<Note>> {
   }
 
   Future<void> deleteNote(String id) async {
-    await NotesService.deleteNote(id);
+    await _notesService.deleteNote(id);
     state = state.where((note) => note.id != id).toList();
   }
 }

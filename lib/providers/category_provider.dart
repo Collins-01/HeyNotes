@@ -1,16 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hey_notes/core/services/categories_service.dart';
+import 'package:hey_notes/service_locator.dart';
 import 'package:hive/hive.dart';
 import 'package:uuid/uuid.dart';
 import '../models/category.dart';
 
-final categoryServiceProvider = Provider<CategoryService>((ref) {
-  throw UnimplementedError('CategoryService not initialized');
-});
-
 final categoryProvider =
     StateNotifierProvider<CategoryNotifier, List<Category>>(
-      (ref) => throw UnimplementedError('CategoryNotifier not initialized'),
+      (ref) => CategoryNotifier(sl<CategoryService>()),
     );
 
 class CategoryNotifier extends StateNotifier<List<Category>> {

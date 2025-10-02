@@ -1,11 +1,13 @@
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gap/gap.dart';
 import 'package:hey_notes/core/theme/app_colors.dart';
+import 'package:hey_notes/core/utils/debounce.dart';
+import 'package:hey_notes/core/utils/ui_helpers.dart';
+import 'package:hey_notes/extension/extension.dart';
 import 'package:hey_notes/models/note.dart';
 import 'package:hey_notes/providers/category_provider.dart';
-import 'package:hey_notes/extension/date_extension.dart';
-import 'package:hey_notes/screens/home/components/components.dart';
 import 'package:hey_notes/screens/home/homepage/homepage_viewmodel.dart';
 import 'package:hey_notes/screens/notes_page/note_view_screen.dart';
 
@@ -17,23 +19,47 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
+  late TextEditingController _searchController;
+  // Create an instance
+  final _searchDebouncer = Debouncer(
+    duration: const Duration(milliseconds: 500),
+  );
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final categories = ref.watch(categoryProvider);
     final vm = ref.read(homepageViewModelProvider.notifier);
     final state = ref.watch(homepageViewModelProvider);
     return Scaffold(
+      backgroundColor: context.isDarkMode ? AppColors.black : AppColors.white,
       appBar: AppBar(
+        backgroundColor: context.isDarkMode ? AppColors.black : AppColors.white,
+        centerTitle: false,
         title: SlideInLeft(
-          child: Text.rich(
-            TextSpan(
-              text: state.selectedDate.year.toString(),
-              children: [
-                TextSpan(
-                  text: ' ${state.selectedDate.month}',
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ],
+          child: Padding(
+            padding: const EdgeInsets.only(left: UIHelpers.scaffoldPadding),
+            child: Text.rich(
+              TextSpan(
+                text: state.selectedDate.year.toString(),
+                children: [
+                  TextSpan(
+                    text: ' ${state.selectedDate.toMonthStringValue}',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -43,21 +69,35 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ),
       body: Column(
         children: [
-          Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-              color: AppColors.black,
+          Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: UIHelpers.scaffoldPadding,
             ),
-            child: const TextField(
-              decoration: InputDecoration(
-                hintText: 'Search for notes',
-                border: InputBorder.none,
-                contentPadding: EdgeInsets.all(16),
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+                // color: context.isDarkMode ? AppColors.black : AppColors.white,
+                color: AppColors.background,
+              ),
+              child: TextField(
+                controller: _searchController,
+                onChanged: (value) {
+                  _searchDebouncer.run(() {
+                    vm.searchNotes(value);
+                  });
+                },
+                decoration: const InputDecoration(
+                  hintText: 'Search for notes',
+                  border: InputBorder.none,
+                  prefixIcon: Icon(Icons.search),
+                  contentPadding: EdgeInsets.all(UIHelpers.scaffoldPadding),
+                ),
               ),
             ),
           ),
+          const Gap(UIHelpers.sm),
           SizedBox(
-            height: 60,
+            height: 85,
             width: double.infinity,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
@@ -75,14 +115,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 );
                 final dayName = date.toDayStringValue;
                 return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                  padding: const EdgeInsets.symmetric(horizontal: UIHelpers.sm),
                   child: GestureDetector(
                     onTap: () {
                       vm.setDate(date);
                     },
-                    child: Container(
-                      padding: const EdgeInsets.all(8.0),
+                    child: AnimatedContainer(
+                      width: 65,
+                      duration: UIHelpers.slowDuration,
+
+                      curve: Curves.linear,
+                      padding: const EdgeInsets.all(UIHelpers.md),
                       decoration: BoxDecoration(
+                        border: Border.all(
+                          color: day != state.selectedDate.day
+                              ? AppColors.black.withValues(alpha: 0.2)
+                              : Colors.transparent,
+                        ),
                         color: day == state.selectedDate.day
                             ? AppColors.black
                             : null,
@@ -91,14 +140,27 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Text(dayName, style: const TextStyle(fontSize: 12)),
+                          Text(
+                            dayName,
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(
+                                  color: day == state.selectedDate.day
+                                      ? AppColors.white
+                                      : null,
+                                ),
+                          ),
+                          const Gap(UIHelpers.xs),
                           Text(
                             day.toString(),
-                            style: TextStyle(
-                              fontWeight: day == state.selectedDate.day
-                                  ? FontWeight.bold
-                                  : FontWeight.normal,
-                            ),
+                            style: Theme.of(context).textTheme.titleLarge
+                                ?.copyWith(
+                                  fontWeight: day == state.selectedDate.day
+                                      ? FontWeight.bold
+                                      : FontWeight.normal,
+                                  color: day == state.selectedDate.day
+                                      ? AppColors.white
+                                      : null,
+                                ),
                           ),
                         ],
                       ),
@@ -108,47 +170,52 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               },
             ),
           ),
-          Visibility(
-            visible: categories.isNotEmpty,
-            child: SizedBox(
-              height: 50,
-              width: double.infinity,
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    ...categories.map(
-                      (category) => CategoryButton(
-                        category: category,
-                        isSelected: state.selectedCategoryID == category.id,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          Expanded(
-            child: GridView.builder(
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                mainAxisSpacing: 8,
-                crossAxisSpacing: 8,
-                childAspectRatio: 8,
-                mainAxisExtent: 8,
-              ),
-              padding: const EdgeInsets.all(8.0),
-              itemBuilder: (context, index) {
-                final note = state.notes[index];
-                return NoteCard(note: note);
-              },
-            ),
-          ),
+          // Visibility(
+          //   visible: categories.isNotEmpty,
+          //   child: SizedBox(
+          //     height: 50,
+          //     width: double.infinity,
+          //     child: SingleChildScrollView(
+          //       scrollDirection: Axis.horizontal,
+          //       child: Row(
+          //         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          //         children: [
+          //           ...categories.map(
+          //             (category) => CategoryButton(
+          //               category: category,
+          //               isSelected: state.selectedCategoryID == category.id,
+          //             ),
+          //           ),
+          //         ],
+          //       ),
+          //     ),
+          //   ),
+          // ),
+          // if (state.notes.isNotEmpty) ...[
+          //   Expanded(
+          //     child: GridView.builder(
+          //       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          //         crossAxisCount: 2,
+          //         mainAxisSpacing: 8,
+          //         crossAxisSpacing: 8,
+          //         childAspectRatio: 8,
+          //         mainAxisExtent: 8,
+          //       ),
+          //       padding: const EdgeInsets.all(8.0),
+          //       itemBuilder: (context, index) {
+          //         final note = state.notes[index];
+          //         return NoteCard(note: note);
+          //       },
+          //     ),
+          //   ),
+          // ],
         ],
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: AppColors.black,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
         onPressed: () {
           Navigator.push(
             context,

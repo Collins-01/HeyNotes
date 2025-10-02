@@ -45,6 +45,8 @@ dependencies:
   equatable: ^2.0.7
   animate_do: ^4.2.0
   flutter_quill: ^11.4.2
+  get_it: ^8.2.0
+  gap: ^3.0.1
 
 dev_dependencies:
   flutter_test:
@@ -66,8 +68,8 @@ flutter:
   uses-material-design: true
 
   # Assets configuration
-  # assets:
-  #   - images/example.jpg
+  assets:
+    - assets/splash/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

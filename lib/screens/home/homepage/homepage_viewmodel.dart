@@ -22,7 +22,13 @@ class HomepageViewmodel extends StateNotifier<HomepageState> {
     state = state.copyWith(selectedDate: date);
   }
 
-  void sortNotes() {}
+  void searchNotes(String query) {
+    final notes = ref.read(noteProvider);
+    final filteredNotes = notes
+        .where((note) => note.title.toLowerCase().contains(query.toLowerCase()))
+        .toList();
+    state = state.copyWith(notes: filteredNotes);
+  }
 }
 
 final homepageViewModelProvider =

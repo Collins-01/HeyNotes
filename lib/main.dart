@@ -7,11 +7,12 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'screens/splash/splash_screen.dart';
 import 'models/note.dart';
 import 'models/category.dart';
-import 'providers/category_provider.dart';
+import 'service_locator.dart';
 
 Future<void> main() async {
   // Ensure Flutter is initialized
   WidgetsFlutterBinding.ensureInitialized();
+  setupLocator();
 
   try {
     // Initialize Hive
@@ -28,22 +29,14 @@ Future<void> main() async {
     ]);
 
     // Initialize storage service
-    await NotesService.init();
+    await sl.get<NotesService>().init();
 
     // Initialize category service
-    final categoryService = CategoryService();
-    await categoryService.init();
+    await sl.get<CategoryService>().init();
 
     // Run the app with providers
     runApp(
       ProviderScope(
-        overrides: [
-          categoryServiceProvider.overrideWithValue(categoryService),
-          categoryProvider.overrideWith((ref) {
-            final service = ref.watch(categoryServiceProvider);
-            return CategoryNotifier(service);
-          }),
-        ],
         child: MaterialApp(
           title: 'HeyNotes',
           debugShowCheckedModeBanner: false,

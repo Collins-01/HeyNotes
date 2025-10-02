@@ -137,7 +137,7 @@ class HomeScreen extends ConsumerWidget {
                           ref.read(notesFilterProvider.notifier).updateCategoryFilter(category.id);
                         },
                         backgroundColor: Color(category.color),
-                      )).toList(),
+                      )),
                     ],
                   ),
                 ),

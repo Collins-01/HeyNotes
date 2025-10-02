@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'app.dart';
+import 'screens/splash_screen.dart';
 import 'models/note.dart';
 import 'models/category.dart';
 import 'services/category_hive_service.dart';
@@ -43,7 +43,15 @@ Future<void> main() async {
             return CategoryNotifier(service);
           }),
         ],
-        child: const App(),
+        child: MaterialApp(
+          title: 'HeyNotes',
+          debugShowCheckedModeBanner: false,
+          theme: ThemeData(
+            primarySwatch: Colors.blue,
+            visualDensity: VisualDensity.adaptivePlatformDensity,
+          ),
+          home: const SplashScreen(),
+        ),
       ),
     );
   } catch (e, stackTrace) {

@@ -1,8 +1,15 @@
-# Hey Notes
+<div align="center">
+  <img src="assets/splash/heynotes_logo.png" alt="HeyNotes Logo" width="200"/>
+  
+  # Hey Notes
 
-A beautiful and intuitive note-taking app built with Flutter. Organize your thoughts, ideas, and tasks with ease.
-
-![App Screenshot](screenshots/app_screenshot.png)
+  A beautiful and intuitive note-taking app built with Flutter. Organize your thoughts, ideas, and tasks with ease.
+  
+  [![Flutter](https://img.shields.io/badge/Flutter-02569B?style=for-the-badge&logo=flutter&logoColor=white)](https://flutter.dev/)
+  [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
+  
+  <img src="screenshots/app_screenshot.png" alt="App Screenshot" width="300"/>
+</div>
 
 ## ✨ Features
 

@@ -41,6 +41,7 @@ dependencies:
   permission_handler: ^11.3.0
   pdf: ^3.10.8
   printing: ^5.11.1
+  flutter_native_splash: ^2.4.6
 
 dev_dependencies:
   flutter_test:
@@ -73,3 +74,14 @@ flutter:
 
   # Google Fonts will be used for Avenir
   # No need to declare fonts here when using google_fonts package
+
+# Splash screen configuration
+flutter_native_splash:
+  color: "#FFFFFF"  # Background color of the splash screen
+  image: assets/splash/heynotes_logo.png  # Path to your splash screen image
+  android: true
+  ios: true
+  web: false
+  android_12:
+    image: assets/splash/heynotes_logo.png
+    icon_background_color: "#FFFFFF"

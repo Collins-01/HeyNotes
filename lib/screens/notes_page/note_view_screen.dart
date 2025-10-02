@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hey_notes/screens/notes_page/components/rich_text_editor.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -300,8 +301,13 @@ class _NoteViewScreenState extends ConsumerState<NoteViewScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
-        title: const Text('View Note'),
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+        ),
         actions: [
           PopupMenuButton<ShareOption>(
             icon: const Icon(Icons.share_outlined),
@@ -349,25 +355,45 @@ class _NoteViewScreenState extends ConsumerState<NoteViewScreen> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            quill.QuillEditor(
-              controller: _controller,
-              scrollController: ScrollController(),
-              // scrollable: true,
-              focusNode: FocusNode(),
+        child: RichTextEditor(
+          initialText: '''Psychology
 
-              // autoFocus: true,
-              // readOnly: false,
-              // expands: false,
-              // padding: EdgeInsets.all(10),
-              // customStyles: quill.DefaultStyles(
-              //   paragraphStyle: TextStyle(fontSize: 16),
-              // ),
-            ),
-          ],
+Examples/Diagrams:
+• Classical Conditioning Example
+Pavlov's dog experiment: Associating a bell (neutral stimulus) with food (unconditioned stimulus) leads to the dog salivating (unconditioned response). Eventually, the bell alone elicits salivation (conditioned response).
+
+• Cognitive Process Diagram
+Input (Sensory Information) → Processing (Attention, Perception, Memory) → Output (Behavioral Response)
+
+Questions/Clarifications:
+Question 1: How does behaviorism differ from cognitive psychology?
+
+Answer: Behaviorism focuses on observable behavior, while cognitive psychology investigates mental processes.
+
+• Researchers often use case studies.''',
+          onSave: () {
+            // Handle save logic
+          },
         ),
+        // child: Column(
+        //   crossAxisAlignment: CrossAxisAlignment.start,
+        //   children: [
+        //     quill.QuillEditor(
+        //       controller: _controller,
+        //       scrollController: ScrollController(),
+        //       // scrollable: true,
+        //       focusNode: FocusNode(),
+
+        //       // autoFocus: true,
+        //       // readOnly: false,
+        //       // expands: false,
+        //       // padding: EdgeInsets.all(10),
+        //       // customStyles: quill.DefaultStyles(
+        //       //   paragraphStyle: TextStyle(fontSize: 16),
+        //       // ),
+        //     ),
+        //   ],
+        // ),
       ),
     );
   }

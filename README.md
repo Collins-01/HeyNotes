@@ -95,6 +95,41 @@ flutter run
   - `NSDocumentsFolderUsageDescription` - For file operations
   - `NSPhotoLibraryUsageDescription` - For saving files to photo library
 
+## 🛠 Development Commands
+
+This project includes a comprehensive Makefile with useful commands for development. Here are the available commands:
+
+### Basic Commands
+- `make get` - Install all dependencies
+- `make clean` - Clean build files and cache
+- `make build-runner` - Generate code using build_runner
+- `make watch` - Watch for changes and regenerate code automatically
+- `make doctor` - Check Flutter environment
+- `make analyze` - Analyze code for issues
+- `make format` - Format code using dart format
+
+### Testing
+- `make test` - Run all tests
+- `make test-coverage` - Generate test coverage report
+
+### Building
+- `make build-apk` - Build release APK
+- `make build-apk-debug` - Build debug APK
+- `make build-apk-split` - Build release APK with split per ABI
+- `make build-appbundle` - Build Android App Bundle (AAB)
+- `make build-ios` - Build iOS app
+- `make build-ipa` - Build iOS archive for App Store
+
+### Development Workflows
+- `make run` - Run app in debug mode
+- `make run-release` - Run app in release mode
+- `make pod-install` - Install iOS pods
+- `make deps` - Check for outdated dependencies
+- `make upgrade` - Upgrade all dependencies
+- `make clean-build` - Clean, get deps, and run build_runner
+- `make dev-build` - Complete development build pipeline
+- `make release-apk` - Complete release APK build pipeline
+
 ## 🤝 Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.

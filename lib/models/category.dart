@@ -1,7 +1,19 @@
-class Category {
+import 'package:hive/hive.dart';
+
+part 'category.g.dart';
+
+@HiveType(typeId: 1) // Different typeId from Note model
+class Category extends HiveObject {
+  @HiveField(0)
   final String id;
-  final String name;
-  final int color;
+  
+  @HiveField(1)
+  String name;
+  
+  @HiveField(2)
+  int color;
+  
+  @HiveField(3)
   final DateTime createdAt;
 
   Category({

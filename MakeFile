@@ -1,0 +1,157 @@
+# Flutter Makefile
+# This makefile contains common Flutter build and development commands
+
+.PHONY: help clean get build-runner watch doctor analyze test build-apk build-apk-release build-apk-debug build-appbundle build-ios run upgrade format test-coverage deps clean-build build-ipa pod-install
+
+# Default target - shows available commands
+help:
+	@echo "📋 Available commands:"
+	@echo "  make get              - Get all dependencies (flutter pub get)"
+	@echo "  make clean            - Clean build files and cache"
+	@echo "  make build-runner     - Generate code using build_runner (one-time)"
+	@echo "  make watch            - Watch for changes and regenerate code automatically"
+	@echo "  make doctor           - Run flutter doctor to check environment"
+	@echo "  make analyze          - Analyze code for issues"
+	@echo "  make format           - Format code using dart format"
+	@echo "  make test             - Run all unit and widget tests"
+	@echo "  make test-coverage    - Generate test coverage report"
+	@echo "  make deps             - Check for outdated dependencies"
+	@echo "  make build-apk        - Build release APK"
+	@echo "  make build-apk-debug  - Build debug APK"
+	@echo "  make build-apk-split  - Build release APK with split per ABI"
+	@echo "  make build-appbundle  - Build Android App Bundle (AAB) for Play Store"
+	@echo "  make build-ios        - Build iOS app"
+	@echo "  make build-ipa        - Build iOS archive for App Store"
+	@echo "  make pod-install      - Install iOS pods"
+	@echo "  make run              - Run app in debug mode"
+	@echo "  make run-release      - Run app in release mode"
+	@echo "  make upgrade          - Upgrade all dependencies"
+	@echo "  make clean-build      - Clean, get deps, and run build_runner"
+	@echo "  make outdated         - Check for outdated packages (alias for deps)"
+
+# Get all dependencies
+get:
+	@echo "📦 Getting dependencies..."
+	flutter pub get
+
+# Clean build files and cache
+clean:
+	@echo "🧹 Cleaning build files..."
+	flutter clean
+	flutter pub get
+
+# Run build_runner to generate code (one-time generation)
+build-runner:
+	@echo "🔨 Running build_runner..."
+	flutter pub run build_runner build --delete-conflicting-outputs
+
+# Watch mode - automatically regenerate code on changes
+watch:
+	@echo "👀 Starting build_runner in watch mode..."
+	flutter pub run build_runner watch --delete-conflicting-outputs
+
+# Check Flutter environment
+doctor:
+	@echo "🏥 Running Flutter doctor..."
+	flutter doctor -v
+
+# Analyze code for issues
+analyze:
+	@echo "🔍 Analyzing code..."
+	flutter analyze
+
+# Run tests
+test:
+	@echo "🧪 Running tests..."
+	flutter test
+
+# Build release APK (universal - works on all architectures)
+build-apk:
+	@echo "📱 Building release APK..."
+	flutter build apk --release
+
+# Build debug APK
+build-apk-debug:
+	@echo "📱 Building debug APK..."
+	flutter build apk --debug
+
+# Build split APKs per architecture (smaller file sizes)
+build-apk-split:
+	@echo "📱 Building split APKs per ABI..."
+	flutter build apk --split-per-abi --release
+
+# Build Android App Bundle for Play Store
+build-appbundle:
+	@echo "📦 Building Android App Bundle..."
+	flutter build appbundle --release
+
+# Build iOS app
+build-ios:
+	@echo "🍎 Building iOS app..."
+	flutter build ios --release
+
+# Run app in debug mode
+run:
+	@echo "🚀 Running app in debug mode..."
+	flutter run
+# Run app in release mode
+run-release:
+	@echo "Running app in release mode..."
+	flutter run --release
+
+# Format code
+format:
+	@echo "Formatting code..."
+	flutter format .
+
+# Generate test coverage report
+test-coverage:
+	@echo "Generating test coverage report..."
+	flutter test --coverage
+	genhtml coverage/lcov.info -o coverage/html
+	@echo "Coverage report generated at: coverage/html/index.html"
+
+# Check for outdated dependencies
+deps:
+	@echo "Checking for outdated dependencies..."
+	flutter pub outdated
+
+# Clean and rebuild everything
+clean-build: clean get build-runner
+
+# Build iOS archive for App Store
+build-ipa:
+	@echo "Building iOS archive..."
+	cd ios && xcodebuild -workspace Runner.xcworkspace -scheme Runner -sdk iphonesimulator -configuration Debug -allowProvisioningUpdates
+
+# Install iOS pods
+pod-install:
+	@echo "Installing iOS pods..."
+	cd ios && pod install
+
+# Upgrade all dependencies
+upgrade:
+	@echo "Upgrading dependencies..."
+	flutter pub upgrade
+
+# Alias for deps
+outdated: deps
+	@echo "Checking for outdated packages..."
+	flutter pub outdated
+
+# Clean, get dependencies, and run build_runner
+rebuild: clean get build-runner
+
+# Full build pipeline for development
+dev-build: clean get build-runner analyze
+	@echo "✅ Development build complete!"
+
+# Full build pipeline for release APK
+release-apk: clean get build-runner analyze test build-apk
+	@echo "✅ Release APK build complete!"
+	@echo "📍 APK location: build/app/outputs/flutter-apk/app-release.apk"
+
+# Full build pipeline for Play Store (AAB)
+release-aab: clean get build-runner analyze test build-appbundle
+	@echo "✅ Release AAB build complete!"
+	@echo "📍 AAB location: build/app/outputs/bundle/release/app-release.aab"

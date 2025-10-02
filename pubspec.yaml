@@ -33,7 +33,7 @@ dependencies:
   # Utilities
   path_provider: ^2.1.1
   shared_preferences: ^2.2.2
-  intl: ^0.19.0
+  intl: ^0.20.2
   share_plus: ^7.2.1
   google_fonts: ^6.1.0 # Kept for fallback if needed, but Avenir is primary
   uuid: ^4.2.2
@@ -42,6 +42,9 @@ dependencies:
   pdf: ^3.10.8
   printing: ^5.11.1
   flutter_native_splash: ^2.4.6
+  equatable: ^2.0.7
+  animate_do: ^4.2.0
+  flutter_quill: ^11.4.2
 
 dev_dependencies:
   flutter_test:

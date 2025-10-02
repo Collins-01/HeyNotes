@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hey_notes/models/note.dart';
-import 'package:hey_notes/screens/home_screen.dart';
-import 'package:hey_notes/screens/note_edit_screen.dart';
-import 'package:hey_notes/screens/note_view_screen.dart';
+import 'package:hey_notes/screens/home/homepage/home_screen.dart';
+import 'package:hey_notes/screens/notes_page/create_edit_notes.dart/note_edit_screen.dart';
+import 'package:hey_notes/screens/notes_page/note_view_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 void main() {

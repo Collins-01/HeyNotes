@@ -3,9 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/navigation/navigation_service.dart';
 import 'core/theme/app_theme.dart';
 import 'models/note.dart';
-import 'screens/home_screen.dart';
-import 'screens/note_edit_screen.dart';
-import 'screens/note_view_screen.dart';
+import 'screens/home/homepage/home_screen.dart';
+import 'screens/notes_page/create_edit_notes.dart/note_edit_screen.dart';
+import 'screens/notes_page/note_view_screen.dart';
 
 // Theme Provider
 final themeProvider = StateNotifierProvider<ThemeNotifier, ThemeMode>((ref) {
@@ -40,14 +40,10 @@ class AppRouter {
         if (note == null) {
           return _errorRoute('Note not found');
         }
-        return MaterialPageRoute(
-          builder: (_) => NoteViewScreen(note: note),
-        );
+        return MaterialPageRoute(builder: (_) => NoteViewScreen(note: note));
       case AppRoutes.noteEdit:
         final note = settings.arguments as Note?;
-        return MaterialPageRoute(
-          builder: (_) => NoteEditScreen(note: note),
-        );
+        return MaterialPageRoute(builder: (_) => NoteEditScreen(note: note));
       default:
         return _errorRoute('Route not found');
     }
@@ -55,9 +51,7 @@ class AppRouter {
 
   static Route<dynamic> _errorRoute(String message) {
     return MaterialPageRoute(
-      builder: (_) => Scaffold(
-        body: Center(child: Text(message)),
-      ),
+      builder: (_) => Scaffold(body: Center(child: Text(message))),
     );
   }
 }
@@ -67,24 +61,21 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ProviderScope(
-      child: Consumer(
-        builder: (context, ref, _) {
-          final themeMode = ref.watch(themeProvider);
-          
-          return MaterialApp(
-            title: 'Hey Notes',
-            debugShowCheckedModeBanner: false,
-            theme: AppTheme.lightTheme,
-            darkTheme: AppTheme.darkTheme,
-            themeMode: themeMode,
-            navigatorKey: NavigationService.navigatorKey,
-            onGenerateRoute: AppRouter.generateRoute,
-            initialRoute: AppRoutes.home,
-          );
-        },
-      ),
+    return Consumer(
+      builder: (context, ref, _) {
+        final themeMode = ref.watch(themeProvider);
+
+        return MaterialApp(
+          title: 'Hey Notes',
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
+          themeMode: themeMode,
+          navigatorKey: NavigationService.navigatorKey,
+          onGenerateRoute: AppRouter.generateRoute,
+          initialRoute: AppRoutes.home,
+        );
+      },
     );
   }
 }
-

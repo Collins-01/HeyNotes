@@ -1,7 +1,7 @@
 import 'package:hive/hive.dart';
-import '../models/category.dart';
+import 'package:hey_notes/models/category.dart';
 
-class CategoryHiveService {
+class CategoryService {
   static const String _boxName = 'categories';
   late Box<Category> _categoriesBox;
 

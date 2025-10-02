@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import '../models/note.dart';
-import '../providers/note_provider.dart';
+import '../../../models/note.dart';
+import '../../../providers/note_provider.dart';
 
 class NoteEditScreen extends ConsumerStatefulWidget {
   final Note? note;

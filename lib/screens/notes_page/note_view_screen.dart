@@ -7,9 +7,10 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
-import '../models/note.dart';
-import '../providers/note_provider.dart';
-import 'note_edit_screen.dart';
+import '../../models/note.dart';
+import '../../providers/note_provider.dart';
+import 'create_edit_notes.dart/note_edit_screen.dart';
+import 'package:flutter_quill/flutter_quill.dart' as quill;
 
 enum ShareOption { text, textFile, pdf }
 
@@ -46,10 +47,37 @@ class ShareOptionsBottomSheet extends StatelessWidget {
   }
 }
 
-class NoteViewScreen extends ConsumerWidget {
+class NoteViewScreen extends ConsumerStatefulWidget {
   final Note note;
 
   const NoteViewScreen({super.key, required this.note});
+
+  @override
+  ConsumerState<NoteViewScreen> createState() => _NoteViewScreenState();
+}
+
+class _NoteViewScreenState extends ConsumerState<NoteViewScreen> {
+  final quill.QuillController _controller = quill.QuillController.basic();
+
+  @override
+  void initState() {
+    super.initState();
+    _controller.document.insert(0, '''
+          Psychology
+
+          Examples/Diagrams:
+          • Classical Conditioning Example
+          Pavlov's dog experiment: Associating a bell (neutral stimulus) with food (unconditioned stimulus) leads to the dog salivating (unconditioned response). Eventually, the bell alone elicits salivation (conditioned response).
+          • Cognitive Process Diagram
+          Input (Sensory Information) → Processing (Attention, Perception, Memory) → Output (Behavioral Response)
+
+          Questions/Clarifications:
+          Question 1: How does behaviorism differ from cognitive psychology?
+          Answer: Behaviorism focuses on observable behavior, while cognitive psychology investigates mental processes
+
+          • Researchers often use case studies,
+          ''');
+  }
 
   Future<void> _deleteNote(BuildContext context, WidgetRef ref) async {
     final shouldDelete = await showDialog<bool>(
@@ -77,7 +105,7 @@ class NoteViewScreen extends ConsumerWidget {
 
     if (shouldDelete == true && context.mounted) {
       try {
-        await ref.read(noteProvider.notifier).deleteNote(note.id);
+        await ref.read(noteProvider.notifier).deleteNote(widget.note.id);
         if (context.mounted) {
           Navigator.pop(context);
         }
@@ -97,7 +125,9 @@ class NoteViewScreen extends ConsumerWidget {
   void _navigateToEditScreen(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => NoteEditScreen(note: note)),
+      MaterialPageRoute(
+        builder: (context) => NoteEditScreen(note: widget.note),
+      ),
     );
   }
 
@@ -126,26 +156,26 @@ class NoteViewScreen extends ConsumerWidget {
     final StringBuffer shareContent = StringBuffer();
 
     // Add title if exists
-    if (note.title.isNotEmpty) {
-      shareContent.writeln(note.title);
+    if (widget.note.title.isNotEmpty) {
+      shareContent.writeln(widget.note.title);
       shareContent.writeln(
-        '${'─' * (note.title.length > 30 ? 30 : note.title.length)}\n',
+        '${'─' * (widget.note.title.length > 30 ? 30 : widget.note.title.length)}\n',
       );
     }
 
     // Add content
-    if (note.content.isNotEmpty) {
-      shareContent.writeln(note.content);
+    if (widget.note.content.isNotEmpty) {
+      shareContent.writeln(widget.note.content);
     }
 
     // Add tags if they exist
-    if (note.tags.isNotEmpty) {
-      shareContent.writeln('\nTags: ${note.tags.join(', ')}');
+    if (widget.note.tags.isNotEmpty) {
+      shareContent.writeln('\nTags: ${widget.note.tags.join(', ')}');
     }
 
     // Add last updated date
     shareContent.writeln(
-      '\nLast updated: ${DateFormat('dd MMM yyyy').format(note.updatedAt)}',
+      '\nLast updated: ${DateFormat('dd MMM yyyy').format(widget.note.updatedAt)}',
     );
 
     await Share.share(shareContent.toString());
@@ -154,28 +184,28 @@ class NoteViewScreen extends ConsumerWidget {
   Future<File> _exportAsTextFile() async {
     final StringBuffer content = StringBuffer();
 
-    if (note.title.isNotEmpty) {
-      content.writeln(note.title);
+    if (widget.note.title.isNotEmpty) {
+      content.writeln(widget.note.title);
       content.writeln(
-        '${'─' * (note.title.length > 30 ? 30 : note.title.length)}\n',
+        '${'─' * (widget.note.title.length > 30 ? 30 : widget.note.title.length)}\n',
       );
     }
 
-    if (note.content.isNotEmpty) {
-      content.writeln(note.content);
+    if (widget.note.content.isNotEmpty) {
+      content.writeln(widget.note.content);
     }
 
-    if (note.tags.isNotEmpty) {
-      content.writeln('\nTags: ${note.tags.join(', ')}');
+    if (widget.note.tags.isNotEmpty) {
+      content.writeln('\nTags: ${widget.note.tags.join(', ')}');
     }
 
     content.writeln(
-      '\nLast updated: ${DateFormat('dd MMM yyyy').format(note.updatedAt)}',
+      '\nLast updated: ${DateFormat('dd MMM yyyy').format(widget.note.updatedAt)}',
     );
 
     final directory = await getTemporaryDirectory();
     final file = File(
-      '${directory.path}/${note.title.isEmpty ? 'note' : note.title.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_')}_${DateTime.now().millisecondsSinceEpoch}.txt',
+      '${directory.path}/${widget.note.title.isEmpty ? 'note' : widget.note.title.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_')}_${DateTime.now().millisecondsSinceEpoch}.txt',
     );
 
     await file.writeAsString(content.toString());
@@ -187,7 +217,8 @@ class NoteViewScreen extends ConsumerWidget {
       final file = await _exportAsTextFile();
       await Share.shareXFiles(
         [XFile(file.path)],
-        subject: 'Note: ${note.title.isNotEmpty ? note.title : 'Untitled'}',
+        subject:
+            'Note: ${widget.note.title.isNotEmpty ? widget.note.title : 'Untitled'}',
         text: 'Here\'s your exported note',
       );
     } catch (e) {
@@ -213,23 +244,23 @@ class NoteViewScreen extends ConsumerWidget {
           return pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
-              if (note.title.isNotEmpty) ...[
+              if (widget.note.title.isNotEmpty) ...[
                 pw.Text(
-                  note.title,
+                  widget.note.title,
                   style: pw.TextStyle(font: boldTtf, fontSize: 24),
                 ),
                 pw.SizedBox(height: 10),
               ],
-              if (note.content.isNotEmpty) ...[
+              if (widget.note.content.isNotEmpty) ...[
                 pw.Text(
-                  note.content,
+                  widget.note.content,
                   style: pw.TextStyle(font: ttf, fontSize: 12),
                 ),
                 pw.SizedBox(height: 10),
               ],
-              if (note.tags.isNotEmpty) ...[
+              if (widget.note.tags.isNotEmpty) ...[
                 pw.Text(
-                  'Tags: ${note.tags.join(', ')}',
+                  'Tags: ${widget.note.tags.join(', ')}',
                   style: pw.TextStyle(
                     font: ttf,
                     fontSize: 10,
@@ -239,7 +270,7 @@ class NoteViewScreen extends ConsumerWidget {
                 pw.SizedBox(height: 10),
               ],
               pw.Text(
-                'Last updated: ${DateFormat('dd MMM yyyy').format(note.updatedAt)}',
+                'Last updated: ${DateFormat('dd MMM yyyy').format(widget.note.updatedAt)}',
                 style: pw.TextStyle(
                   font: ttf,
                   fontSize: 10,
@@ -254,7 +285,7 @@ class NoteViewScreen extends ConsumerWidget {
 
     final directory = await getTemporaryDirectory();
     final file = File(
-      '${directory.path}/${note.title.isEmpty ? 'note' : note.title.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_')}_${DateTime.now().millisecondsSinceEpoch}.pdf',
+      '${directory.path}/${widget.note.title.isEmpty ? 'note' : widget.note.title.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_')}_${DateTime.now().millisecondsSinceEpoch}.pdf',
     );
     await file.writeAsBytes(await pdf.save());
     return file;
@@ -265,7 +296,8 @@ class NoteViewScreen extends ConsumerWidget {
       final file = await _exportAsPdf();
       await Share.shareXFiles(
         [XFile(file.path)],
-        subject: 'Note: ${note.title.isNotEmpty ? note.title : 'Untitled'}',
+        subject:
+            'Note: ${widget.note.title.isNotEmpty ? widget.note.title : 'Untitled'}',
         text: 'Here\'s your exported note as PDF',
       );
     } catch (e) {
@@ -278,7 +310,7 @@ class NoteViewScreen extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('View Note'),
@@ -327,98 +359,25 @@ class NoteViewScreen extends ConsumerWidget {
           const SizedBox(width: 8),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20.0),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Title
-            if (note.title.isNotEmpty) ...[
-              Text(
-                note.title,
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 24,
-                ),
-              ),
-              const SizedBox(height: 16),
-            ],
+            quill.QuillEditor(
+              controller: _controller,
+              scrollController: ScrollController(),
+              // scrollable: true,
+              focusNode: FocusNode(),
 
-            // Dates
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Created: ${DateFormat.yMMMd().add_jm().format(note.createdAt)}',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).hintColor,
-                  ),
-                ),
-                Text(
-                  'Updated: ${DateFormat.yMMMd().add_jm().format(note.updatedAt)}',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).hintColor,
-                  ),
-                ),
-              ],
+              // autoFocus: true,
+              // readOnly: false,
+              // expands: false,
+              // padding: EdgeInsets.all(10),
+              // customStyles: quill.DefaultStyles(
+              //   paragraphStyle: TextStyle(fontSize: 16),
+              // ),
             ),
-            const SizedBox(height: 24),
-
-            // Tags
-            if (note.tags.isNotEmpty) ...[
-              Wrap(
-                spacing: 6.0,
-                runSpacing: 6.0,
-                children: note.tags
-                    .map(
-                      (tag) => Chip(
-                        label: Text(
-                          tag,
-                          style: Theme.of(context).textTheme.labelSmall
-                              ?.copyWith(
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.onSurfaceVariant,
-                              ),
-                        ),
-                        backgroundColor: Theme.of(
-                          context,
-                        ).colorScheme.surfaceVariant,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 2,
-                        ),
-                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        visualDensity: VisualDensity.compact,
-                      ),
-                    )
-                    .toList(),
-              ),
-              const SizedBox(height: 24),
-            ],
-
-            // Content
-            if (note.content.isNotEmpty) ...[
-              Text(
-                note.content,
-                style: Theme.of(
-                  context,
-                ).textTheme.bodyLarge?.copyWith(height: 1.8, fontSize: 16),
-              ),
-            ] else ...[
-              Center(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 32.0),
-                  child: Text(
-                    'No content available',
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      fontStyle: FontStyle.italic,
-                      color: Theme.of(context).hintColor,
-                    ),
-                  ),
-                ),
-              ),
-            ],
           ],
         ),
       ),

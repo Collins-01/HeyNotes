@@ -10,6 +10,7 @@ class AppColors {
   static const Color lavender = Color(0xFFF1DBF5);
   static const Color periwinkle = Color(0xFFD9E8FC);
   static const Color lightCoral = Color(0xFFFFDBE3);
+  static const Color textBlack = Color(0xff121212);
 
   // Neutral Colors
   static const Color black = Color(0xFF000000);
@@ -18,13 +19,13 @@ class AppColors {
   static const Color mediumGrey = Color(0xFF666666);
   static const Color lightGrey = Color(0xFFE0E0E0);
   static const Color background = Color(0xFFFAFAFA);
-  
+
   // Functional Colors
   static const Color success = Color(0xFF4CAF50);
   static const Color error = Color(0xFFF44336);
   static const Color warning = Color(0xFFFFC107);
   static const Color info = Color(0xFF2196F3);
-  
+
   // Background Colors for Notes
   static const List<Color> noteColors = [
     lightBlue,
@@ -36,9 +37,10 @@ class AppColors {
     periwinkle,
     lightCoral,
   ];
-  
+
   // Get a random note color
   static Color getRandomNoteColor() {
-    return noteColors[DateTime.now().millisecondsSinceEpoch % noteColors.length];
+    return noteColors[DateTime.now().millisecondsSinceEpoch %
+        noteColors.length];
   }
 }

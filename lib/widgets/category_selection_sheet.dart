@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hey_notes/core/theme/app_colors.dart';
 import 'package:hey_notes/models/category.dart';
 import 'package:hey_notes/providers/category_provider.dart';
 
@@ -61,20 +62,28 @@ class _CategorySelectionSheetState
           const SizedBox(height: 16),
           Expanded(
             child: ListView.builder(
-              itemCount: categories.length + 1,
+              itemCount: categories.length,
               itemBuilder: (context, index) {
-                final category = categories[index + 1];
-                if (index == 0) {
-                  return Row(
-                    children: [Icon(Icons.add_circle_outline_rounded)],
-                  );
-                }
+                final category = categories[index];
                 return ListTile(
-                  leading: Text(category.name),
+                  onTap: () {
+                    setState(() {
+                      _selectedCategoryID = _selectedCategoryID == category.name ? null : category.name;
+                    });
+                  },
+                  leading: Text(
+                    category.name,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: theme.colorScheme.onSurface,
+                    ),
+                  ),
                   trailing: Icon(
                     _selectedCategoryID == category.name
                         ? Icons.check_circle
-                        : Icons.circle,
+                        : Icons.circle_outlined,
+                    color: _selectedCategoryID == category.name
+                        ? theme.colorScheme.primary
+                        : theme.colorScheme.onSurface.withOpacity(0.5),
                   ),
                 );
               },
@@ -85,6 +94,7 @@ class _CategorySelectionSheetState
           SizedBox(
             width: double.infinity,
             child: FilledButton(
+              
               onPressed: () {
                 final cat = categories.firstWhere(
                   (e) => e.name == _selectedCategoryID,
@@ -94,6 +104,7 @@ class _CategorySelectionSheetState
               },
               style: FilledButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 16),
+                backgroundColor: AppColors.textBlack,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),

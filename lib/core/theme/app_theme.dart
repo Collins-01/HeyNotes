@@ -14,57 +14,59 @@ class AppTheme {
 
   // Text theme with Montserrat from Google Fonts
   static TextTheme _buildTextTheme() {
+    final baseTextStyle = TextStyle(color: AppColors.textBlack);
+    
     return GoogleFonts.montserratTextTheme(
-      const TextTheme(
+      TextTheme(
         // Display styles
-        displayLarge: TextStyle(
+        displayLarge: baseTextStyle.copyWith(
           fontSize: 32,
           fontWeight: FontWeight.w700,
           height: 1.2,
           letterSpacing: -0.5,
         ),
-        displayMedium: TextStyle(
+        displayMedium: baseTextStyle.copyWith(
           fontSize: 28,
           fontWeight: FontWeight.w600,
           height: 1.25,
           letterSpacing: -0.25,
         ),
-        displaySmall: TextStyle(
+        displaySmall: baseTextStyle.copyWith(
           fontSize: 24,
           fontWeight: FontWeight.w600,
           height: 1.3,
         ),
 
         // Headline styles
-        headlineLarge: TextStyle(
+        headlineLarge: baseTextStyle.copyWith(
           fontSize: 22,
           fontWeight: FontWeight.w700,
           height: 1.35,
         ),
-        headlineMedium: TextStyle(
+        headlineMedium: baseTextStyle.copyWith(
           fontSize: 20,
           fontWeight: FontWeight.w600,
           height: 1.4,
         ),
-        headlineSmall: TextStyle(
+        headlineSmall: baseTextStyle.copyWith(
           fontSize: 18,
           fontWeight: FontWeight.w600,
           height: 1.45,
         ),
 
         // Title styles
-        titleLarge: TextStyle(
+        titleLarge: baseTextStyle.copyWith(
           fontSize: 18,
           fontWeight: FontWeight.w500,
           height: 1.45,
         ),
-        titleMedium: TextStyle(
+        titleMedium: baseTextStyle.copyWith(
           fontSize: 16,
           fontWeight: FontWeight.w500,
           height: 1.5,
           letterSpacing: 0.15,
         ),
-        titleSmall: TextStyle(
+        titleSmall: baseTextStyle.copyWith(
           fontSize: 14,
           fontWeight: FontWeight.w500,
           height: 1.5,
@@ -72,19 +74,19 @@ class AppTheme {
         ),
 
         // Body styles
-        bodyLarge: TextStyle(
+        bodyLarge: baseTextStyle.copyWith(
           fontSize: 16,
           fontWeight: FontWeight.w400,
           height: 1.5,
           letterSpacing: 0.15,
         ),
-        bodyMedium: TextStyle(
+        bodyMedium: baseTextStyle.copyWith(
           fontSize: 14,
           fontWeight: FontWeight.w400,
           height: 1.5,
           letterSpacing: 0.25,
         ),
-        bodySmall: TextStyle(
+        bodySmall: baseTextStyle.copyWith(
           fontSize: 12,
           fontWeight: FontWeight.w400,
           height: 1.5,
@@ -92,7 +94,7 @@ class AppTheme {
         ),
 
         // Label styles
-        labelLarge: TextStyle(
+        labelLarge: baseTextStyle.copyWith(
           fontSize: 14,
           fontWeight: FontWeight.w500,
           height: 1.5,

@@ -1199,6 +1199,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.4.1"
+  swift_alert:
+    dependency: "direct main"
+    description:
+      name: swift_alert
+      sha256: f4a359ca717075fdfb4fc7d544ed4b4289ae70aecd0602fc1ff8d7cca5518b46
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.0"
   synchronized:
     dependency: transitive
     description:

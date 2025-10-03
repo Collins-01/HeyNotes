@@ -96,6 +96,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
         ),
         actions: [
+          IconButton(
+            onPressed: () {
+              vm.onInit();
+            },
+            icon: const Icon(Icons.refresh_rounded),
+          ),
           PopupMenuButton<MenuAction>(
             borderRadius: BorderRadius.circular(4),
             elevation: 0.3,

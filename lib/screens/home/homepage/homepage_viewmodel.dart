@@ -15,6 +15,12 @@ class HomepageViewmodel extends StateNotifier<HomepageState> {
     // Apply the current sort order to the initial notes
     sortNotes(state.sortOrder);
     loadCategories();
+
+    // reset selected category and date
+    state = state.copyWith(
+      selectedCategoryID: 'all',
+      selectedDate: DateTime.now(),
+    );
   }
 
   void loadCategories() {}
@@ -60,6 +66,19 @@ class HomepageViewmodel extends StateNotifier<HomepageState> {
 
   void setCategory(String id) {
     state = state.copyWith(selectedCategoryID: id);
+    filterByCategory();
+  }
+
+  void filterByCategory() {
+    final notes = ref.read(noteProvider);
+    if (state.selectedCategoryID?.toLowerCase() == 'all') {
+      state = state.copyWith(notes: notes);
+      return;
+    }
+    final filteredNotes = notes.where((note) {
+      return note.categoryId == state.selectedCategoryID;
+    }).toList();
+    state = state.copyWith(notes: filteredNotes);
   }
 
   void sortNotes(NoteSort sortBy) {

@@ -251,7 +251,7 @@ void main() {
     await tester.pumpAndSettle();
 
     // Verify we're on the view screen and content is displayed
-    expect(find.byType(NoteViewScreen), findsOneWidget);
+    expect(find.byType(CreateEditNoteScreen), findsOneWidget);
     expect(find.text('This is a detailed note with some content'), findsOneWidget);
   });
 

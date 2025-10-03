@@ -2,16 +2,24 @@ import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
+import 'package:hey_notes/app.dart';
+import 'package:hey_notes/core/navigation/navigation_service.dart';
 import 'package:hey_notes/core/theme/app_colors.dart';
 import 'package:hey_notes/core/utils/debounce.dart';
+import 'package:hey_notes/core/utils/icon_assets.dart';
 import 'package:hey_notes/core/utils/ui_helpers.dart';
+import 'package:hey_notes/enums/menu_action.dart';
+import 'package:hey_notes/enums/note_sort.dart';
 import 'package:hey_notes/extension/extension.dart';
 import 'package:hey_notes/models/note.dart';
 import 'package:hey_notes/providers/category_provider.dart';
 import 'package:hey_notes/screens/home/components/category_button.dart';
 import 'package:hey_notes/screens/home/components/notes_card.dart';
 import 'package:hey_notes/screens/home/homepage/homepage_viewmodel.dart';
+import 'package:hey_notes/screens/home/settings_page.dart';
 import 'package:hey_notes/screens/notes_page/note_view_screen.dart';
+import 'package:hey_notes/widgets/show_svg.dart';
+import 'package:intl/intl.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -38,15 +46,41 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   void dispose() {
-    _searchController.dispose();
     super.dispose();
+  }
+
+  Future<void> _selectDate(BuildContext context, HomepageViewmodel vm) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2100),
+    );
+    
+    if (picked != null) {
+      // Format the date to show in the app bar
+      final formattedDate = DateFormat('MMMM d, y').format(picked);
+      
+      // Update the selected date in the viewmodel
+      vm.setDate(picked);
+      
+      // Show a snackbar with the selected date
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Showing notes for $formattedDate'),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final categories = ref.watch(categoryProvider);
-    final vm = ref.read(homepageViewModelProvider.notifier);
     final state = ref.watch(homepageViewModelProvider);
+    final vm = ref.read(homepageViewModelProvider.notifier);
+    final categories = ref.watch(categoryProvider);
     return Scaffold(
       backgroundColor: context.isDarkMode ? AppColors.black : AppColors.white,
       appBar: AppBar(
@@ -69,7 +103,83 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
         ),
         actions: [
-          IconButton(onPressed: () {}, icon: const Icon(Icons.more_vert)),
+          PopupMenuButton<MenuAction>(
+            icon: const Icon(Icons.more_vert),
+            onSelected: (action) {
+              switch (action) {
+                case MenuAction.sortByDateNewest:
+                  vm.sortNotes(NoteSort.newestFirst);
+                  break;
+                case MenuAction.sortByDateOldest:
+                  vm.sortNotes(NoteSort.oldestFirst);
+                  break;
+                case MenuAction.sortByTitle:
+                  vm.sortNotes(NoteSort.byTitle);
+                  break;
+                case MenuAction.selectDate:
+                  _selectDate(context, vm);
+                  break;
+                case MenuAction.settings:
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const SettingsPage()),
+                  );
+                  break;
+              }
+            },
+            itemBuilder: (context) => [
+              const PopupMenuItem<MenuAction>(
+                value: MenuAction.sortByDateNewest,
+                child: Row(
+                  children: [
+                    Icon(Icons.sort, size: 20),
+                    SizedBox(width: 8),
+                    Text('Newest First'),
+                  ],
+                ),
+              ),
+              const PopupMenuItem<MenuAction>(
+                value: MenuAction.sortByDateOldest,
+                child: Row(
+                  children: [
+                    Icon(Icons.sort, size: 20),
+                    SizedBox(width: 8),
+                    Text('Oldest First'),
+                  ],
+                ),
+              ),
+              const PopupMenuItem<MenuAction>(
+                value: MenuAction.sortByTitle,
+                child: Row(
+                  children: [
+                    Icon(Icons.sort_by_alpha, size: 20),
+                    SizedBox(width: 8),
+                    Text('Sort by Title'),
+                  ],
+                ),
+              ),
+              const PopupMenuDivider(),
+              const PopupMenuItem<MenuAction>(
+                value: MenuAction.selectDate,
+                child: Row(
+                  children: [
+                    Icon(Icons.calendar_today, size: 20),
+                    SizedBox(width: 8),
+                    Text('Select Date'),
+                  ],
+                ),
+              ),
+              const PopupMenuItem<MenuAction>(
+                value: MenuAction.settings,
+                child: Row(
+                  children: [
+                    Icon(Icons.settings, size: 20),
+                    SizedBox(width: 8),
+                    Text('Settings'),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ],
       ),
       body: Column(
@@ -94,13 +204,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 decoration: const InputDecoration(
                   hintText: 'Search for notes',
                   border: InputBorder.none,
-                  prefixIcon: Icon(Icons.search),
+                  prefixIcon: ShowSVG(
+                    svgPath: IconAssets.search,
+                    height: 20,
+                    width: 20,
+                  ),
                   contentPadding: EdgeInsets.all(UIHelpers.scaffoldPadding),
                 ),
               ),
             ),
           ),
-          const Gap(UIHelpers.sm),
+          const Gap(UIHelpers.md),
           SizedBox(
             height: 85,
             width: double.infinity,
@@ -238,7 +352,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => NoteViewScreen(note: Note.empty()),
+              builder: (context) => CreateEditNoteScreen(note: Note.empty()),
             ),
           );
         },

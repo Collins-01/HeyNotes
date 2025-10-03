@@ -6,8 +6,6 @@ import 'package:hey_notes/screens/notes_page/components/rich_text_editor.dart';
 import 'package:hey_notes/screens/notes_page/create_edit_notes.dart/create_edit_notes_viewmodel.dart';
 import 'package:hey_notes/widgets/category_selection_sheet.dart';
 
-import '../../providers/note_provider.dart';
-
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 
 enum ShareOption { text, textFile, pdf }
@@ -45,16 +43,16 @@ class ShareOptionsBottomSheet extends StatelessWidget {
   }
 }
 
-class NoteViewScreen extends ConsumerStatefulWidget {
+class CreateEditNoteScreen extends ConsumerStatefulWidget {
   final Note? note;
 
-  const NoteViewScreen({super.key, required this.note});
+  const CreateEditNoteScreen({super.key, required this.note});
 
   @override
-  ConsumerState<NoteViewScreen> createState() => _NoteViewScreenState();
+  ConsumerState<CreateEditNoteScreen> createState() => _NoteViewScreenState();
 }
 
-class _NoteViewScreenState extends ConsumerState<NoteViewScreen> {
+class _NoteViewScreenState extends ConsumerState<CreateEditNoteScreen> {
   final quill.QuillController _controller = quill.QuillController.basic();
 
   @override

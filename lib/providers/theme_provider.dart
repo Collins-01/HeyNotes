@@ -31,7 +31,7 @@ class ThemeNotifier extends StateNotifier<ThemeMode> {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt(_themeKey, theme.index);
   }
-  
+
   void toggleTheme() {
     if (state == ThemeMode.light) {
       setTheme(AppThemeMode.dark);
@@ -39,19 +39,25 @@ class ThemeNotifier extends StateNotifier<ThemeMode> {
       setTheme(AppThemeMode.light);
     }
   }
-  
+
   void update(ThemeMode Function(ThemeMode) updater) {
     state = updater(state);
+  }
+
+  void setThemeMode(AppThemeMode theme) {
+    state = theme == AppThemeMode.system
+        ? ThemeMode.system
+        : (theme == AppThemeMode.light ? ThemeMode.light : ThemeMode.dark);
+  }
+
+  /// Returns the current app theme mode
+  AppThemeMode get currentThemeMode {
+    if (state == ThemeMode.system) return AppThemeMode.system;
+    return state == ThemeMode.light ? AppThemeMode.light : AppThemeMode.dark;
   }
 }
 
 final themeProvider = StateNotifierProvider<ThemeNotifier, ThemeMode>((ref) {
-  return ThemeNotifier();
-});
-
-final appThemeModeProvider = StateNotifierProvider<ThemeNotifier, ThemeMode>((
-  ref,
-) {
   return ThemeNotifier();
 });
 

@@ -16,7 +16,7 @@ class NoteCard extends StatelessWidget {
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => NoteViewScreen(note: note)),
+          MaterialPageRoute(builder: (context) => CreateEditNoteScreen(note: note)),
         );
       },
       child: Container(

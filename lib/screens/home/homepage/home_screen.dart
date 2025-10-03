@@ -2,12 +2,11 @@ import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
-import 'package:hey_notes/app.dart';
-import 'package:hey_notes/core/navigation/navigation_service.dart';
 import 'package:hey_notes/core/theme/app_colors.dart';
+import 'package:hey_notes/core/utils/date_helper.dart';
 import 'package:hey_notes/core/utils/debounce.dart';
-import 'package:hey_notes/core/utils/icon_assets.dart';
 import 'package:hey_notes/core/utils/ui_helpers.dart';
+import 'package:hey_notes/core/utils/utils.dart';
 import 'package:hey_notes/enums/menu_action.dart';
 import 'package:hey_notes/enums/note_sort.dart';
 import 'package:hey_notes/extension/extension.dart';
@@ -18,8 +17,7 @@ import 'package:hey_notes/screens/home/components/notes_card.dart';
 import 'package:hey_notes/screens/home/homepage/homepage_viewmodel.dart';
 import 'package:hey_notes/screens/home/settings_page.dart';
 import 'package:hey_notes/screens/notes_page/note_view_screen.dart';
-import 'package:hey_notes/widgets/show_svg.dart';
-import 'package:intl/intl.dart';
+import 'package:hey_notes/widgets/custom_image.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -50,29 +48,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Future<void> _selectDate(BuildContext context, HomepageViewmodel vm) async {
-    final DateTime? picked = await showDatePicker(
+    final DateTime? picked = await DateHelper.showNativeDatePicker(
       context: context,
       initialDate: DateTime.now(),
       firstDate: DateTime(2000),
       lastDate: DateTime(2100),
+      confirmText: 'Select',
     );
-    
+
     if (picked != null) {
-      // Format the date to show in the app bar
-      final formattedDate = DateFormat('MMMM d, y').format(picked);
-      
       // Update the selected date in the viewmodel
       vm.setDate(picked);
-      
+
       // Show a snackbar with the selected date
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Showing notes for $formattedDate'),
-            duration: const Duration(seconds: 2),
-          ),
-        );
-      }
+      DateHelper.showDateSelectedSnackbar(
+        context,
+        date: picked,
+        message: 'Showing notes for ${DateHelper.formatDate(picked)}',
+      );
     }
   }
 
@@ -104,6 +97,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ),
         actions: [
           PopupMenuButton<MenuAction>(
+            borderRadius: BorderRadius.circular(4),
+            elevation: 0.3,
+            color: context.isDarkMode ? AppColors.black : AppColors.white,
+
             icon: const Icon(Icons.more_vert),
             onSelected: (action) {
               switch (action) {
@@ -201,15 +198,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     vm.searchNotes(value);
                   });
                 },
-                decoration: const InputDecoration(
-                  hintText: 'Search for notes',
+                decoration: InputDecoration(
+                  hintText: 'Search notes by title or content',
                   border: InputBorder.none,
-                  prefixIcon: ShowSVG(
-                    svgPath: IconAssets.search,
-                    height: 20,
-                    width: 20,
+                  prefixIcon: const Icon(Icons.search, size: 20),
+                  suffixIcon: state.searchQuery.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(Icons.clear, size: 20),
+                          onPressed: () {
+                            _searchController.clear();
+                            vm.searchNotes('');
+                          },
+                        )
+                      : null,
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: UIHelpers.scaffoldPadding,
+                    vertical: UIHelpers.scaffoldPadding,
                   ),
-                  contentPadding: EdgeInsets.all(UIHelpers.scaffoldPadding),
                 ),
               ),
             ),
@@ -305,10 +310,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       ...categories.map(
                         (category) => CategoryButton(
                           onTap: () {
-                            vm.setCategory(category.id);
+                            vm.setCategory(category.name);
                           },
                           category: category,
-                          isSelected: state.selectedCategoryID == category.id,
+                          isSelected: state.selectedCategoryID == category.name,
                         ),
                       ),
                     ],
@@ -317,31 +322,32 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
             ),
           ),
-          if (state.notes.isNotEmpty) ...[
-            const Gap(UIHelpers.lg),
-            Expanded(
-              child: GridView.builder(
-                itemCount: state.notes.length,
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  mainAxisSpacing: 12,
-                  crossAxisSpacing: 12,
-                  childAspectRatio:
-                      0.8, // Adjust this value to control the width/height ratio
-                  mainAxisExtent: 200, // Fixed height of 200 logical pixels
-                ),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
-                ),
-                // padding: const EdgeInsets.all(8.0),
-                itemBuilder: (context, index) {
-                  final note = state.notes[index];
-                  return NoteCard(note: note);
-                },
-              ),
-            ),
-          ],
+          const Gap(UIHelpers.lg),
+          Expanded(
+            child: state.notes.isEmpty
+                ? const Center(
+                    child: CustomImage(imagePath: ImageAssets.noNotesYet),
+                  )
+                : GridView.builder(
+                    itemCount: state.notes.length,
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          mainAxisSpacing: 12,
+                          crossAxisSpacing: 12,
+                          childAspectRatio: 0.8,
+                          mainAxisExtent: 200,
+                        ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                    itemBuilder: (context, index) {
+                      final note = state.notes[index];
+                      return NoteCard(note: note);
+                    },
+                  ),
+          ),
         ],
       ),
       floatingActionButton: FloatingActionButton(

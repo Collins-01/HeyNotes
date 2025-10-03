@@ -28,11 +28,23 @@ class HomepageViewmodel extends StateNotifier<HomepageState> {
   }
 
   void searchNotes(String query) {
+    if (query.isEmpty) {
+      // If search query is empty, show all notes
+      final allNotes = ref.read(noteProvider);
+      state = state.copyWith(notes: allNotes, searchQuery: '');
+      return;
+    }
+
     final notes = ref.read(noteProvider);
-    final filteredNotes = notes
-        .where((note) => note.title.toLowerCase().contains(query.toLowerCase()))
-        .toList();
-    state = state.copyWith(notes: filteredNotes);
+    final searchQuery = query.toLowerCase();
+    
+    final filteredNotes = notes.where((note) {
+      final titleMatch = note.title.toLowerCase().contains(searchQuery);
+      final contentMatch = note.content.toLowerCase().contains(searchQuery);
+      return titleMatch || contentMatch;
+    }).toList();
+    
+    state = state.copyWith(notes: filteredNotes, searchQuery: searchQuery);
   }
 
   void setCategory(String id) {
@@ -62,6 +74,6 @@ class HomepageViewmodel extends StateNotifier<HomepageState> {
 }
 
 final homepageViewModelProvider =
-    StateNotifierProvider<HomepageViewmodel, HomepageState>((ref) {
+    StateNotifierProvider.autoDispose<HomepageViewmodel, HomepageState>((ref) {
   return HomepageViewmodel(ref);
 });

@@ -8,6 +8,7 @@ class HomepageState extends Equatable {
   final DateTime selectedDate;
   final List<Note> notes;
   final NoteSort sortOrder;
+  final String searchQuery;
   
   const HomepageState({
     this.isLoading = false,
@@ -15,6 +16,7 @@ class HomepageState extends Equatable {
     required this.selectedDate,
     this.notes = const [],
     this.sortOrder = NoteSort.newestFirst,
+    this.searchQuery = '',
   });
 
   HomepageState.initial() : this(selectedDate: DateTime.now());
@@ -25,6 +27,7 @@ class HomepageState extends Equatable {
     DateTime? selectedDate,
     List<Note>? notes,
     NoteSort? sortOrder,
+    String? searchQuery,
   }) {
     return HomepageState(
       isLoading: isLoading ?? this.isLoading,
@@ -32,6 +35,7 @@ class HomepageState extends Equatable {
       selectedDate: selectedDate ?? this.selectedDate,
       notes: notes ?? this.notes,
       sortOrder: sortOrder ?? this.sortOrder,
+      searchQuery: searchQuery ?? this.searchQuery,
     );
   }
 

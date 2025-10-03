@@ -33,10 +33,9 @@ class _AddCategoryModalState extends ConsumerState<AddCategoryModal> {
 
   void _submit() {
     if (_formKey.currentState!.validate()) {
-      ref.read(categoryProvider.notifier).addCategory(
-            _nameController.text.trim(),
-            _selectedColor,
-          );
+      ref
+          .read(categoryProvider.notifier)
+          .addCategory(_nameController.text.trim());
       Navigator.of(context).pop();
     }
   }
@@ -72,10 +71,7 @@ class _AddCategoryModalState extends ConsumerState<AddCategoryModal> {
             ),
           ),
           const SizedBox(height: 16),
-          Text(
-            'Select Color',
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
+          Text('Select Color', style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 8),
           SizedBox(
             height: 50,

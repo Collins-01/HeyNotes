@@ -72,7 +72,7 @@ class _CategorySelectionSheetState
                 return ListTile(
                   leading: Text(category.name),
                   trailing: Icon(
-                    _selectedCategoryID == category.id
+                    _selectedCategoryID == category.name
                         ? Icons.check_circle
                         : Icons.circle,
                   ),
@@ -87,7 +87,7 @@ class _CategorySelectionSheetState
             child: FilledButton(
               onPressed: () {
                 final cat = categories.firstWhere(
-                  (e) => e.id == _selectedCategoryID,
+                  (e) => e.name == _selectedCategoryID,
                 );
                 widget.onSave(cat);
                 Navigator.of(context).pop();

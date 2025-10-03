@@ -1,6 +1,5 @@
 import 'package:hive/hive.dart';
 import 'package:hey_notes/models/category.dart';
-import 'package:uuid/uuid.dart';
 
 class CategoryService {
   static const String _boxName = 'categories';
@@ -20,57 +19,58 @@ class CategoryService {
 
   Future<void> _addDefaultCategories() async {
     final defaultCategories = [
-      Category(id: const Uuid().v4(), name: 'Personal'),
-      Category(id: const Uuid().v4(), name: 'Work'),
-      Category(id: const Uuid().v4(), name: 'Ideas'),
-      Category(id: const Uuid().v4(), name: 'To Do'),
-      Category(id: const Uuid().v4(), name: 'Shopping'),
-      Category(id: const Uuid().v4(), name: 'Meetings'),
-      Category(id: const Uuid().v4(), name: 'Projects'),
-      Category(id: const Uuid().v4(), name: 'Learning'),
-      Category(id: const Uuid().v4(), name: 'Recipes'),
-      Category(id: const Uuid().v4(), name: 'Travel'),
+      Category(name: 'All'),
+      Category(name: 'Personal'),
+      Category(name: 'Work'),
+      Category(name: 'Ideas'),
+      Category(name: 'To Do'),
+      Category(name: 'Shopping'),
+      Category(name: 'Favorites'),
+      Category(name: 'Important'),
+      Category(name: 'Travel'),
+      Category(name: 'Recipes'),
+      Category(name: 'Other'),
     ];
 
-    await _categoriesBox.putAll({
-      for (var category in defaultCategories) category.id: category,
-    });
+    for (var category in defaultCategories) {
+      await _categoriesBox.put(category.name, category);
+    }
   }
 
-  // Add or update a category
-  Future<void> saveCategory(Category category) async {
-    await _categoriesBox.put(category.id, category);
+  /// Adds or updates a category in the database
+  Future<void> addCategory(Category category) async {
+    await _categoriesBox.put(category.name, category);
   }
 
-  // Get all categories
+  /// Returns all categories from the database
   List<Category> getAllCategories() {
     return _categoriesBox.values.toList();
   }
 
-  // Get a single category by ID
-  Category? getCategory(String id) {
-    return _categoriesBox.get(id);
+  /// Returns a single category by its name
+  Category? getCategory(String name) {
+    return _categoriesBox.get(name);
   }
 
-  // Delete a category
-  Future<void> deleteCategory(String id) async {
-    await _categoriesBox.delete(id);
+  /// Deletes a category by its name
+  Future<void> deleteCategory(String name) async {
+    await _categoriesBox.delete(name);
   }
 
-  // Clear all categories
+  /// Clears all categories from the database
   Future<void> clearAll() async {
     await _categoriesBox.clear();
   }
 
-  // Get categories count
+  /// Returns the number of categories
   int get categoriesCount => _categoriesBox.length;
 
-  // Stream of categories for real-time updates
+  /// Returns a stream of box events for real-time updates
   Stream<BoxEvent> watchCategories() {
     return _categoriesBox.watch();
   }
 
-  // Close the box when done
+  /// Closes the database
   Future<void> close() async {
     await _categoriesBox.close();
   }

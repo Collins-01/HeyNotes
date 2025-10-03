@@ -323,8 +323,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           const Gap(UIHelpers.lg),
           Expanded(
             child: state.notes.isEmpty
-                ? const Center(
-                    child: CustomImage(imagePath: ImageAssets.noNotesYet),
+                ? Center(
+                    child: FadeIn(
+                      child: const CustomImage(
+                        imagePath: ImageAssets.noNotesYet,
+                      ),
+                    ),
                   )
                 : GridView.builder(
                     itemCount: state.notes.length,

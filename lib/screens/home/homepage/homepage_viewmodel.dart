@@ -6,7 +6,7 @@ import 'package:hey_notes/screens/home/homepage/homepage_state.dart';
 
 class HomepageViewmodel extends StateNotifier<HomepageState> {
   final Ref ref;
-  
+
   HomepageViewmodel(this.ref) : super(HomepageState.initial());
 
   void onInit() async {
@@ -25,6 +25,17 @@ class HomepageViewmodel extends StateNotifier<HomepageState> {
 
   void setDate(DateTime date) {
     state = state.copyWith(selectedDate: date);
+    filterByDate();
+  }
+
+  void filterByDate() {
+    final notes = ref.read(noteProvider);
+    final filteredNotes = notes.where((note) {
+      return note.createdAt.year == state.selectedDate.year &&
+          note.createdAt.month == state.selectedDate.month &&
+          note.createdAt.day == state.selectedDate.day;
+    }).toList();
+    state = state.copyWith(notes: filteredNotes);
   }
 
   void searchNotes(String query) {
@@ -37,13 +48,13 @@ class HomepageViewmodel extends StateNotifier<HomepageState> {
 
     final notes = ref.read(noteProvider);
     final searchQuery = query.toLowerCase();
-    
+
     final filteredNotes = notes.where((note) {
       final titleMatch = note.title.toLowerCase().contains(searchQuery);
       final contentMatch = note.content.toLowerCase().contains(searchQuery);
       return titleMatch || contentMatch;
     }).toList();
-    
+
     state = state.copyWith(notes: filteredNotes, searchQuery: searchQuery);
   }
 
@@ -53,7 +64,7 @@ class HomepageViewmodel extends StateNotifier<HomepageState> {
 
   void sortNotes(NoteSort sortBy) {
     final notes = List<Note>.from(state.notes);
-    
+
     switch (sortBy) {
       case NoteSort.newestFirst:
         notes.sort((a, b) => b.createdAt.compareTo(a.createdAt));
@@ -65,15 +76,12 @@ class HomepageViewmodel extends StateNotifier<HomepageState> {
         notes.sort((a, b) => a.title.compareTo(b.title));
         break;
     }
-    
-    state = state.copyWith(
-      notes: notes,
-      sortOrder: sortBy,
-    );
+
+    state = state.copyWith(notes: notes, sortOrder: sortBy);
   }
 }
 
 final homepageViewModelProvider =
     StateNotifierProvider.autoDispose<HomepageViewmodel, HomepageState>((ref) {
-  return HomepageViewmodel(ref);
-});
+      return HomepageViewmodel(ref);
+    });

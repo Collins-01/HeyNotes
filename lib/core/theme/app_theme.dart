@@ -130,9 +130,7 @@ class AppTheme {
       useMaterial3: true,
       colorScheme: colorScheme,
       primaryColor: primaryColor,
-      scaffoldBackgroundColor: isDark
-          ? AppColors.darkGrey
-          : AppColors.background,
+      scaffoldBackgroundColor: isDark ? AppColors.darkGrey : AppColors.white,
       canvasColor: isDark ? AppColors.darkGrey : AppColors.white,
       cardColor: isDark ? const Color(0xFF1E1E1E) : AppColors.white,
 
@@ -306,16 +304,16 @@ class AppTheme {
   // Light theme
   static ThemeData get lightTheme => _baseTheme(
     primaryColor: AppColors.lightBlue,
-    colorScheme: ColorScheme.light(
+    colorScheme: const ColorScheme.light(
       primary: AppColors.lightBlue,
       secondary: AppColors.mintGreen,
       surface: AppColors.white,
-      background: AppColors.background,
+      surfaceContainerHighest: AppColors.background,
       error: AppColors.error,
       onPrimary: AppColors.darkGrey,
       onSecondary: AppColors.darkGrey,
       onSurface: AppColors.darkGrey,
-      onBackground: AppColors.darkGrey,
+      onSurfaceVariant: AppColors.darkGrey,
       onError: AppColors.white,
       brightness: Brightness.light,
     ),

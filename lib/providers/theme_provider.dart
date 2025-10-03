@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:hey_notes/core/theme/app_theme.dart';
 
-enum AppThemeMode { light, dark, system }
+enum AppThemeMode { system, light, dark }
 
 class ThemeNotifier extends StateNotifier<ThemeMode> {
   static const String _themeKey = 'theme_mode';
@@ -12,11 +13,17 @@ class ThemeNotifier extends StateNotifier<ThemeMode> {
   }
 
   Future<void> _loadTheme() async {
-    final prefs = await SharedPreferences.getInstance();
-    final themeIndex = prefs.getInt(_themeKey) ?? AppThemeMode.system.index;
-    state = ThemeMode.values[themeIndex];
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final themeIndex = prefs.getInt(_themeKey) ?? AppThemeMode.system.index;
+      state = ThemeMode.values[themeIndex];
+    } catch (e) {
+      // If there's an error loading the theme, default to system theme
+      state = ThemeMode.system;
+    }
   }
 
+  /// Changes the current theme to the specified [theme]
   Future<void> setTheme(AppThemeMode theme) async {
     if ((theme == AppThemeMode.system && state == ThemeMode.system) ||
         (theme == AppThemeMode.light && state == ThemeMode.light) ||
@@ -24,30 +31,23 @@ class ThemeNotifier extends StateNotifier<ThemeMode> {
       return;
     }
 
-    state = theme == AppThemeMode.system
+    final newThemeMode = theme == AppThemeMode.system
         ? ThemeMode.system
         : (theme == AppThemeMode.light ? ThemeMode.light : ThemeMode.dark);
 
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt(_themeKey, theme.index);
-  }
+    state = newThemeMode;
 
-  void toggleTheme() {
-    if (state == ThemeMode.light) {
-      setTheme(AppThemeMode.dark);
-    } else {
-      setTheme(AppThemeMode.light);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setInt(_themeKey, theme.index);
+    } catch (e) {
+      debugPrint('Failed to save theme preference: $e');
     }
   }
 
-  void update(ThemeMode Function(ThemeMode) updater) {
-    state = updater(state);
-  }
-
-  void setThemeMode(AppThemeMode theme) {
-    state = theme == AppThemeMode.system
-        ? ThemeMode.system
-        : (theme == AppThemeMode.light ? ThemeMode.light : ThemeMode.dark);
+  /// Toggles between light and dark theme
+  void toggleTheme() {
+    setTheme(state == ThemeMode.light ? AppThemeMode.dark : AppThemeMode.light);
   }
 
   /// Returns the current app theme mode
@@ -55,47 +55,24 @@ class ThemeNotifier extends StateNotifier<ThemeMode> {
     if (state == ThemeMode.system) return AppThemeMode.system;
     return state == ThemeMode.light ? AppThemeMode.light : AppThemeMode.dark;
   }
+
+  /// Returns the current theme data based on the current brightness
+  ThemeData getThemeData(BuildContext context) {
+    final brightness = state == ThemeMode.system
+        ? MediaQuery.platformBrightnessOf(context)
+        : (state == ThemeMode.light ? Brightness.light : Brightness.dark);
+    
+    return brightness == Brightness.dark 
+        ? AppTheme.darkTheme 
+        : AppTheme.lightTheme;
+  }
+
+  /// Sets the theme mode (alias for setTheme for backward compatibility)
+  void setThemeMode(AppThemeMode theme) {
+    setTheme(theme);
+  }
 }
 
 final themeProvider = StateNotifierProvider<ThemeNotifier, ThemeMode>((ref) {
   return ThemeNotifier();
-});
-
-final themeDataProvider = Provider<ThemeData>((ref) {
-  final themeMode = ref.watch(themeProvider);
-
-  final isDark =
-      themeMode == ThemeMode.dark ||
-      (themeMode == ThemeMode.system &&
-          WidgetsBinding.instance.window.platformBrightness == Brightness.dark);
-
-  if (isDark) {
-    return ThemeData.dark().copyWith(
-      colorScheme: ColorScheme.dark(
-        primary: Colors.blueGrey[800]!,
-        secondary: Colors.blueGrey[600]!,
-        surface: Colors.blueGrey[900]!,
-        background: Colors.blueGrey[900]!,
-      ),
-      cardTheme: CardThemeData(
-        color: Colors.blueGrey[800],
-        elevation: 2,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ),
-    );
-  } else {
-    return ThemeData.light().copyWith(
-      colorScheme: const ColorScheme.light(
-        primary: Colors.blue,
-        secondary: Colors.lightBlue,
-        surface: Colors.white,
-        background: Color(0xFFF5F5F5),
-      ),
-      cardTheme: CardThemeData(
-        color: Colors.white,
-        elevation: 2,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ),
-    );
-  }
 });

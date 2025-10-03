@@ -355,7 +355,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       floatingActionButton: FloatingActionButton(
         backgroundColor: AppColors.black,
         foregroundColor: AppColors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        shape: const CircleBorder(),
         onPressed: () {
           Navigator.push(
             context,
@@ -364,7 +364,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
           );
         },
-        child: const Icon(Icons.add),
+        child: Roulette(child: const Icon(Icons.add)),
       ),
     );
   }

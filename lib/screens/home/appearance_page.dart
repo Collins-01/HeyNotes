@@ -94,7 +94,7 @@ class AppearancePage extends ConsumerStatefulWidget {
 class _AppearancePageState extends ConsumerState<AppearancePage> {
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(themeDataProvider);
+    final state = ref.watch(themeProvider);
     final currentThemeMode = ref.read(themeProvider.notifier).currentThemeMode;
 
     return Scaffold(

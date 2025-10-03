@@ -231,18 +231,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             width: double.infinity,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
-              itemCount: DateTime(
-                DateTime.now().year,
-                DateTime.now().month + 1,
-                0,
-              ).day,
+              itemCount: 7, // Show current date + next 6 days
               itemBuilder: (context, index) {
-                final day = index + 1;
-                final date = DateTime(
-                  DateTime.now().year,
-                  DateTime.now().month,
-                  day,
-                );
+                final date = DateTime.now().add(Duration(days: index));
+                final day = date.day;
                 final dayName = date.toDayStringValue;
                 return Padding(
                   padding: const EdgeInsets.symmetric(horizontal: UIHelpers.sm),

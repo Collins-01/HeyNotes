@@ -4,7 +4,7 @@ import 'core/navigation/navigation_service.dart';
 import 'core/theme/app_theme.dart';
 import 'models/note.dart';
 import 'screens/home/homepage/home_screen.dart';
-import 'screens/notes_page/create_edit_notes.dart/note_edit_screen.dart';
+import 'screens/notes_page/create_edit_notes.dart/create_edit_notes_page.dart';
 import 'screens/notes_page/note_view_screen.dart';
 
 // Theme Provider
@@ -43,7 +43,7 @@ class AppRouter {
         return MaterialPageRoute(builder: (_) => NoteViewScreen(note: note));
       case AppRoutes.noteEdit:
         final note = settings.arguments as Note?;
-        return MaterialPageRoute(builder: (_) => NoteEditScreen(note: note));
+        return MaterialPageRoute(builder: (_) => CreateEditNotesPage(note: note));
       default:
         return _errorRoute('Route not found');
     }

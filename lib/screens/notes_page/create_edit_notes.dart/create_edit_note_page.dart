@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hey_notes/core/theme/app_colors.dart';
+import 'package:hey_notes/core/utils/ui_helpers.dart';
 import 'package:hey_notes/models/note.dart';
-import 'package:hey_notes/screens/notes_page/components/rich_text_editor.dart';
 import 'package:hey_notes/screens/notes_page/create_edit_notes.dart/create_edit_notes_viewmodel.dart';
 import 'package:hey_notes/widgets/category_selection_sheet.dart';
 
@@ -53,10 +54,12 @@ class CreateEditNoteScreen extends ConsumerStatefulWidget {
 
 class _NoteViewScreenState extends ConsumerState<CreateEditNoteScreen> {
   final quill.QuillController _controller = quill.QuillController.basic();
+  FocusNode? _focusNode;
 
   @override
   void initState() {
     super.initState();
+    _focusNode = FocusNode();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref
           .read(createEditNotesViewModel.notifier)
@@ -81,6 +84,7 @@ class _NoteViewScreenState extends ConsumerState<CreateEditNoteScreen> {
           IconButton(
             icon: const Icon(Icons.save_rounded),
             onPressed: () {
+              FocusScope.of(context).unfocus();
               showModalBottomSheet(
                 context: context,
                 isScrollControlled: true,
@@ -148,32 +152,157 @@ class _NoteViewScreenState extends ConsumerState<CreateEditNoteScreen> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: RichTextEditor(
-          initialText: widget.note?.content ?? '',
-          onSave: () {
-            // Handle save logic
-          },
+        child: quill.QuillEditor.basic(
+          controller: _controller,
+          focusNode: _focusNode,
         ),
-        // child: Column(
-        //   crossAxisAlignment: CrossAxisAlignment.start,
-        //   children: [
-        //     quill.QuillEditor(
-        //       controller: _controller,
-        //       scrollController: ScrollController(),
-        //       // scrollable: true,
-        //       focusNode: FocusNode(),
-
-        //       // autoFocus: true,
-        //       // readOnly: false,
-        //       // expands: false,
-        //       // padding: EdgeInsets.all(10),
-        //       // customStyles: quill.DefaultStyles(
-        //       //   paragraphStyle: TextStyle(fontSize: 16),
-        //       // ),
-        //     ),
-        //   ],
-        // ),
+      ),
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            vertical: UIHelpers.scaffoldPadding,
+          ),
+          child: Container(
+            height: 55,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(UIHelpers.borderRadiusLg),
+              color: AppColors.textBlack,
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _customToolbarButton(
+                    icon: Icons.format_bold,
+                    onPressed: () => _toggleAttribute(quill.Attribute.bold),
+                    isToggled: _isAttributeActive(quill.Attribute.bold),
+                  ),
+                  _customToolbarButton(
+                    icon: Icons.format_italic,
+                    onPressed: () => _toggleAttribute(quill.Attribute.italic),
+                    isToggled: _isAttributeActive(quill.Attribute.italic),
+                  ),
+                  _customToolbarButton(
+                    icon: Icons.format_underline,
+                    onPressed: () =>
+                        _toggleAttribute(quill.Attribute.underline),
+                    isToggled: _isAttributeActive(quill.Attribute.underline),
+                  ),
+                  _customToolbarButton(
+                    icon: Icons.format_align_left,
+                    onPressed: () =>
+                        _toggleAttribute(quill.Attribute.leftAlignment),
+                    isToggled: _isAttributeActive(
+                      quill.Attribute.leftAlignment,
+                    ),
+                  ),
+                  _customToolbarButton(
+                    icon: Icons.format_align_center,
+                    onPressed: () =>
+                        _toggleAttribute(quill.Attribute.centerAlignment),
+                    isToggled: _isAttributeActive(
+                      quill.Attribute.centerAlignment,
+                    ),
+                  ),
+                  _customToolbarButton(
+                    icon: Icons.format_align_right,
+                    onPressed: () =>
+                        _toggleAttribute(quill.Attribute.rightAlignment),
+                    isToggled: _isAttributeActive(
+                      quill.Attribute.rightAlignment,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
       ),
     );
+  }
+
+  Widget _customToolbarButton({
+    required IconData icon,
+    String? label,
+    required VoidCallback onPressed,
+    bool isToggled = false,
+  }) {
+    return InkWell(
+      onTap: onPressed,
+      borderRadius: BorderRadius.circular(4),
+      child: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: isToggled ? Colors.blue.withOpacity(0.2) : Colors.transparent,
+          borderRadius: BorderRadius.circular(4),
+          border: Border.all(
+            color: isToggled ? Colors.blue : Colors.transparent,
+            width: 1,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 20,
+              color: isToggled ? AppColors.info : AppColors.white,
+            ),
+            if (label != null) ...[
+              const SizedBox(width: 4),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: isToggled ? AppColors.info : AppColors.white,
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _toggleAttribute(quill.Attribute attribute) {
+    final selection = _controller.selection;
+    if (selection.isCollapsed) {
+      // Toggle for future input
+      _controller.formatSelection(attribute);
+    } else {
+      // Toggle for selected text
+      final currentValue = _controller
+          .getSelectionStyle()
+          .attributes[attribute.key];
+
+      if (currentValue == null) {
+        _controller.formatSelection(attribute);
+      } else {
+        _controller.formatSelection(quill.Attribute.clone(attribute, null));
+      }
+    }
+  }
+
+  bool _isAttributeActive(quill.Attribute attribute) {
+    final style = _controller.getSelectionStyle();
+    return style.attributes.containsKey(attribute.key);
+  }
+
+  void _clearFormatting() {
+    final selection = _controller.selection;
+    if (!selection.isCollapsed) {
+      _controller.formatSelection(
+        quill.Attribute.clone(quill.Attribute.bold, null),
+      );
+      _controller.formatSelection(
+        quill.Attribute.clone(quill.Attribute.italic, null),
+      );
+      _controller.formatSelection(
+        quill.Attribute.clone(quill.Attribute.underline, null),
+      );
+    }
   }
 }

@@ -143,6 +143,7 @@ class _NoteViewScreenState extends ConsumerState<CreateEditNoteScreen> {
                     vm.setCategoryID(category?.name);
                     vm.saveNote(
                       context,
+                      title: _titleController?.text.trim() ?? '',
                       controller: _controller,
                       callback: () {
                         Navigator.pop(context);

@@ -5,6 +5,7 @@ import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hey_notes/core/services/pdf_service.dart';
 import 'package:hey_notes/core/theme/app_colors.dart';
+import 'package:hey_notes/core/utils/logger.dart';
 import 'package:hey_notes/extension/extension.dart';
 import 'package:hey_notes/models/note.dart';
 import 'package:hey_notes/models/option.dart';
@@ -147,59 +148,68 @@ class CreateEditNotesViewmodel extends StateNotifier<CreateEditNoteState> {
     BuildContext context, {
     required QuillController controller,
     VoidCallback? callback,
+    required String title,
   }) {
-    // Convert Quill content to string
-    final content = Note.quillToString(controller);
+    try {
+      // Convert Quill content to string
+      
+      final content = Note.quillToString(controller);
 
-    // Get plain text for title generation
-    final plainText = controller.document.toPlainText().trim();
+      bool isEdit = state.note != null;
 
-    bool isEdit = state.note != null;
+      if (isEdit) {
+        ref
+            .read(noteProvider.notifier)
+            .updateNote(
+              Note(
+                id: state.note!.id,
+                title: title,
+                content: content,
+                createdAt: state.note!.createdAt,
+                updatedAt: DateTime.now(),
+                isPinned: state.isPinned,
+                categoryId: state.categoryID.valueOrNull,
+                tags: state.note!.tags,
+                color: state.note!.color,
+              ),
+            );
+        SwiftAlert.display(
+          context,
+          message: 'Note updated successfully',
+          type: NotificationType.success,
+        );
+        callback?.call();
+        return;
+      }
 
-    if (isEdit) {
-      ref
-          .read(noteProvider.notifier)
-          .updateNote(
-            Note(
-              id: state.note!.id,
-              title: plainText.generateTitle, // Use plain text for title
-              content: content, // Store Quill JSON string
-              createdAt: state.note!.createdAt,
-              updatedAt: DateTime.now(),
-              isPinned: state.isPinned,
-              categoryId: state.categoryID.valueOrNull,
-              tags: state.note!.tags,
-              color: state.note!.color,
-            ),
-          );
+      final note = Note(
+        id: const Uuid().v4(),
+        title: title,
+        content: Note.quillToString(controller),
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+        isPinned: state.isPinned,
+        color: AppColors.getRandomNoteColor().toHexCode(),
+        categoryId: state.categoryID.valueOrNull,
+        tags: [],
+      );
+
+      ref.read(noteProvider.notifier).addNote(note);
       SwiftAlert.display(
         context,
-        message: 'Note updated successfully',
+        message: 'Note saved successfully',
         type: NotificationType.success,
       );
       callback?.call();
+    } catch (e) {
+      AppLogger.e(e.toString());
+      SwiftAlert.display(
+        context,
+        message: 'Failed to save note',
+        type: NotificationType.error,
+      );
       return;
     }
-
-    final note = Note(
-      id: const Uuid().v4(),
-      title: plainText.generateTitle, // Use plain text for title
-      content: Note.quillToString(controller), // Store Quill JSON string
-      createdAt: DateTime.now(),
-      updatedAt: DateTime.now(),
-      isPinned: state.isPinned,
-      color: AppColors.getRandomNoteColor().toHexCode(),
-      categoryId: state.categoryID.valueOrNull,
-      tags: [],
-    );
-
-    ref.read(noteProvider.notifier).addNote(note);
-    SwiftAlert.display(
-      context,
-      message: 'Note saved successfully',
-      type: NotificationType.success,
-    );
-    callback?.call();
   }
 }
 

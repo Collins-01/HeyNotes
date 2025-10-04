@@ -140,7 +140,7 @@ class _NoteViewScreenState extends ConsumerState<CreateEditNoteScreen> {
                 builder: (context) => CategorySelectionSheet(
                   selectedCategoryID: state.note?.categoryId,
                   onSave: (category) {
-                    vm.setCategoryID(category?.name);
+                    vm.setCategoryID(category?.name ?? 'All');
                     vm.saveNote(
                       context,
                       title: _titleController?.text.trim() ?? '',

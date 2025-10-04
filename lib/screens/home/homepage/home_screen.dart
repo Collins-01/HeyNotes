@@ -18,6 +18,7 @@ import 'package:hey_notes/screens/home/settings_page.dart';
 import 'package:hey_notes/screens/notes_page/create_edit_notes.dart/create_edit_note_page.dart';
 import 'package:hey_notes/widgets/custom_image.dart';
 import 'package:hey_notes/widgets/note_card.dart';
+import 'package:hey_notes/widgets/show_svg.dart';
 import 'package:swift_alert/swift_alert.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -166,7 +167,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 value: MenuAction.selectDate,
                 child: Row(
                   children: [
-                    Icon(Icons.calendar_today, size: 20),
+                    ShowSVG(
+                      svgPath: IconAssets.calendar,
+                      height: 20,
+                      width: 20,
+                    ),
                     SizedBox(width: 8),
                     Text('Select Date'),
                   ],
@@ -176,7 +181,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 value: MenuAction.settings,
                 child: Row(
                   children: [
-                    Icon(Icons.settings, size: 20),
+                    ShowSVG(
+                      svgPath: IconAssets.settings,
+                      height: 20,
+                      width: 20,
+                    ),
                     SizedBox(width: 8),
                     Text('Settings'),
                   ],
@@ -383,7 +392,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => CreateEditNoteScreen(note: Note.empty()),
+              builder: (context) =>  const CreateEditNoteScreen(),
             ),
           );
         },

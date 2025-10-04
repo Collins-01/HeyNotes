@@ -1,12 +1,20 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gap/gap.dart';
 import 'package:hey_notes/core/theme/app_colors.dart' show AppColors;
+import 'package:hey_notes/core/utils/icon_assets.dart';
 import 'package:hey_notes/core/utils/ui_helpers.dart';
 import 'package:hey_notes/models/note.dart';
+import 'package:hey_notes/screens/home/homepage/home_screen.dart';
+import 'package:hey_notes/screens/home/homepage/homepage_viewmodel.dart';
 import 'package:hey_notes/screens/notes_page/create_edit_notes.dart/create_edit_notes_viewmodel.dart';
 import 'package:hey_notes/widgets/category_selection_sheet.dart';
 
 import 'package:flutter_quill/flutter_quill.dart' as quill;
+import 'package:hey_notes/widgets/show_svg.dart';
+import 'package:swift_alert/swift_alert.dart';
 
 enum ShareOption { text, textFile, pdf }
 
@@ -46,23 +54,55 @@ class ShareOptionsBottomSheet extends StatelessWidget {
 class CreateEditNoteScreen extends ConsumerStatefulWidget {
   final Note? note;
 
-  const CreateEditNoteScreen({super.key, required this.note});
+  const CreateEditNoteScreen({super.key, this.note});
 
   @override
   ConsumerState<CreateEditNoteScreen> createState() => _NoteViewScreenState();
 }
 
 class _NoteViewScreenState extends ConsumerState<CreateEditNoteScreen> {
-  final quill.QuillController _controller = quill.QuillController.basic();
-  FocusNode? _focusNode;
+  late quill.QuillController _controller;
+  TextEditingController? _titleController;
+  final _focusNode = FocusNode();
+  final _titleFocusNode = FocusNode();
+  // bool _isExpanded = false;
+  bool _isTitleFocused = false;
 
   @override
   void initState() {
     super.initState();
-    _focusNode = FocusNode();
+
+    // Initialize the controller with the note content if it exists
+    if (widget.note?.content.isNotEmpty ?? true) {
+      try {
+        // Parse the content as JSON and create a document from it
+        final contentJson = jsonDecode(widget.note!.content) as List<dynamic>;
+        _controller = quill.QuillController(
+          document: quill.Document.fromJson(contentJson),
+          selection: const TextSelection.collapsed(offset: 0),
+        );
+      } catch (e) {
+        // Fallback to empty document if parsing fails
+        _controller = quill.QuillController.basic();
+      }
+    } else {
+      // Start with a basic empty document
+      _controller = quill.QuillController.basic();
+    }
+
+    _titleController = TextEditingController(text: widget.note?.title);
+    _titleFocusNode.addListener(() {
+      if (mounted) {
+        setState(() {
+          _isTitleFocused = _titleFocusNode.hasFocus;
+        });
+      }
+    });
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(createEditNotesViewModel.notifier).onInt(widget.note);
-      _controller.document.insert(0, widget.note?.content ?? '');
+      if (mounted) {
+        ref.read(createEditNotesViewModel.notifier).onInt(widget.note);
+      }
     });
   }
 
@@ -81,9 +121,22 @@ class _NoteViewScreenState extends ConsumerState<CreateEditNoteScreen> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.save_rounded),
+            icon: const ShowSVG(
+              svgPath: IconAssets.save,
+              height: 20,
+              width: 20,
+            ),
             onPressed: () {
               FocusScope.of(context).unfocus();
+              // validate title
+              if (_titleController?.text.isEmpty ?? true) {
+                SwiftAlert.display(
+                  context,
+                  message: 'Title is required',
+                  type: NotificationType.error,
+                );
+                return;
+              }
               showModalBottomSheet(
                 context: context,
                 isScrollControlled: true,
@@ -99,6 +152,11 @@ class _NoteViewScreenState extends ConsumerState<CreateEditNoteScreen> {
                       controller: _controller,
                       callback: () {
                         Navigator.pop(context);
+                        Navigator.of(context).pushReplacement(
+                          MaterialPageRoute(
+                            builder: (context) => const HomeScreen(),
+                          ),
+                        );
                       },
                     );
                   },
@@ -108,18 +166,27 @@ class _NoteViewScreenState extends ConsumerState<CreateEditNoteScreen> {
             tooltip: 'Save',
           ),
           IconButton(
-            icon: state.isPinned
-                ? const Icon(Icons.close)
-                : const Icon(Icons.push_pin_outlined),
+            icon: ShowSVG(
+              svgPath: state.isPinned
+                  ? IconAssets.pushPinFilled
+                  : IconAssets.pushPin,
+              color: state.isPinned ? AppColors.info : AppColors.textBlack,
+              height: 20,
+              width: 20,
+            ),
             onPressed: () => vm.toggleIsPinned(),
             tooltip: 'Delete',
           ),
           const SizedBox(width: 8),
 
           Visibility(
-            visible: state.note != null,
+            visible: widget.note != null,
             child: PopupMenuButton<ShareOption>(
-              icon: const Icon(Icons.share_outlined),
+              icon: const ShowSVG(
+                svgPath: IconAssets.upload,
+                height: 20,
+                width: 20,
+              ),
               tooltip: 'Share',
               onSelected: (option) async {
                 final vm = ref.read(createEditNotesViewModel.notifier);
@@ -156,96 +223,168 @@ class _NoteViewScreenState extends ConsumerState<CreateEditNoteScreen> {
 
         onTap: () {
           // Unfocus when tapping outside
-          _focusNode?.unfocus();
+          _focusNode.unfocus();
           FocusScope.of(context).unfocus();
         },
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: quill.QuillEditor.basic(
-            config: const quill.QuillEditorConfig(
-              autoFocus: true,
-              textInputAction: TextInputAction.done,
-              scrollable: true,
+        child: Column(
+          children: [
+            // Title TextField
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: UIHelpers.scaffoldPadding,
+                vertical: UIHelpers.md,
+              ),
+              child: TextField(
+                focusNode: _titleFocusNode,
+                controller: _titleController,
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+                decoration: InputDecoration(
+                  hintText: 'Title',
+                  hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Theme.of(context).hintColor,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  border: InputBorder.none,
+                  contentPadding: const EdgeInsets.symmetric(
+                    vertical: UIHelpers.md,
+                  ),
+                  isDense: true,
+                ),
+                maxLines: 2,
+                minLines: 1,
+                textInputAction: TextInputAction.next,
+                onChanged: (value) {
+                  // Update the note title in the view model
+                  ref
+                      .read(createEditNotesViewModel.notifier)
+                      .updateTitle(value);
+                },
+              ),
             ),
-            controller: _controller,
-            focusNode: _focusNode,
-          ),
+            // Divider
+            const Divider(height: 1, thickness: 1),
+            const Gap(UIHelpers.lg),
+            // Quill Editor
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: UIHelpers.scaffoldPadding,
+                ),
+                child: quill.QuillEditor.basic(
+                  config: const quill.QuillEditorConfig(
+                    autoFocus: false,
+                    textInputAction: TextInputAction.newline,
+                    scrollable: true,
+                  ),
+                  controller: _controller,
+                  focusNode: _focusNode,
+                ),
+              ),
+            ),
+          ],
         ),
       ),
-      bottomNavigationBar: Padding(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom,
-          left: UIHelpers.scaffoldPadding,
-          right: UIHelpers.scaffoldPadding,
-        ),
-        child: Container(
-          height: 55,
-          width: double.infinity,
-          margin: const EdgeInsets.only(bottom: 16),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(UIHelpers.borderRadiusLg),
-            color: AppColors.textBlack,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 8,
-                offset: const Offset(0, -2),
+      bottomNavigationBar: _isTitleFocused
+          ? null
+          : Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom + UIHelpers.lg,
+                left: UIHelpers.scaffoldPadding,
+                right: UIHelpers.scaffoldPadding,
               ),
-            ],
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                _customToolbarButton(
-                  icon: Icons.format_bold,
-                  onPressed: () => _toggleAttribute(quill.Attribute.bold),
-                  isToggled: _isAttributeActive(quill.Attribute.bold),
+              child: Container(
+                height: 55,
+                width: double.infinity,
+                margin: const EdgeInsets.only(bottom: 16),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(UIHelpers.borderRadiusLg),
+                  color: AppColors.textBlack,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 8,
+                      offset: const Offset(0, -2),
+                    ),
+                  ],
                 ),
-                _customToolbarButton(
-                  icon: Icons.format_italic,
-                  onPressed: () => _toggleAttribute(quill.Attribute.italic),
-                  isToggled: _isAttributeActive(quill.Attribute.italic),
-                ),
-                _customToolbarButton(
-                  icon: Icons.format_underline,
-                  onPressed: () => _toggleAttribute(quill.Attribute.underline),
-                  isToggled: _isAttributeActive(quill.Attribute.underline),
-                ),
-                _customToolbarButton(
-                  icon: Icons.format_align_left,
-                  onPressed: () =>
-                      _toggleAttribute(quill.Attribute.leftAlignment),
-                  isToggled: _isAttributeActive(quill.Attribute.leftAlignment),
-                ),
-                _customToolbarButton(
-                  icon: Icons.format_align_center,
-                  onPressed: () =>
-                      _toggleAttribute(quill.Attribute.centerAlignment),
-                  isToggled: _isAttributeActive(
-                    quill.Attribute.centerAlignment,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: UIHelpers.scaffoldPadding,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      _customToolbarButton(
+                        // icon: Icons.text_fields_rounded,
+                        iconWidget: ShowSVG(
+                          svgPath: IconAssets.textT,
+                          height: 20,
+                          width: 20,
+                          color: Theme.of(context).scaffoldBackgroundColor,
+                        ),
+                        onPressed: () =>
+                            _toggleAttribute(quill.Attribute.style),
+                        isToggled: false,
+                      ),
+                      _customToolbarButton(
+                        icon: Icons.format_bold,
+                        onPressed: () => _toggleAttribute(quill.Attribute.bold),
+                        isToggled: _isAttributeActive(quill.Attribute.bold),
+                      ),
+                      _customToolbarButton(
+                        icon: Icons.format_italic,
+                        onPressed: () =>
+                            _toggleAttribute(quill.Attribute.italic),
+                        isToggled: _isAttributeActive(quill.Attribute.italic),
+                      ),
+                      _customToolbarButton(
+                        icon: Icons.format_underline,
+                        onPressed: () =>
+                            _toggleAttribute(quill.Attribute.underline),
+                        isToggled: _isAttributeActive(
+                          quill.Attribute.underline,
+                        ),
+                      ),
+                      _customToolbarButton(
+                        icon: Icons.format_align_left,
+                        onPressed: () =>
+                            _toggleAttribute(quill.Attribute.leftAlignment),
+                        isToggled: _isAttributeActive(
+                          quill.Attribute.leftAlignment,
+                        ),
+                      ),
+                      _customToolbarButton(
+                        icon: Icons.format_align_center,
+                        onPressed: () =>
+                            _toggleAttribute(quill.Attribute.centerAlignment),
+                        isToggled: _isAttributeActive(
+                          quill.Attribute.centerAlignment,
+                        ),
+                      ),
+                      _customToolbarButton(
+                        icon: Icons.format_align_right,
+                        onPressed: () =>
+                            _toggleAttribute(quill.Attribute.rightAlignment),
+                        isToggled: _isAttributeActive(
+                          quill.Attribute.rightAlignment,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                _customToolbarButton(
-                  icon: Icons.format_align_right,
-                  onPressed: () =>
-                      _toggleAttribute(quill.Attribute.rightAlignment),
-                  isToggled: _isAttributeActive(quill.Attribute.rightAlignment),
-                ),
-              ],
+              ),
             ),
-          ),
-        ),
-      ),
     );
   }
 
   Widget _customToolbarButton({
-    required IconData icon,
+    IconData? icon,
     String? label,
     required VoidCallback onPressed,
     bool isToggled = false,
+    Widget? iconWidget,
   }) {
     return InkWell(
       onTap: onPressed,
@@ -263,11 +402,12 @@ class _NoteViewScreenState extends ConsumerState<CreateEditNoteScreen> {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              icon,
-              size: 20,
-              color: isToggled ? AppColors.info : AppColors.white,
-            ),
+            iconWidget ??
+                Icon(
+                  icon,
+                  size: 20,
+                  color: isToggled ? AppColors.info : AppColors.white,
+                ),
             if (label != null) ...[
               const SizedBox(width: 4),
               Text(

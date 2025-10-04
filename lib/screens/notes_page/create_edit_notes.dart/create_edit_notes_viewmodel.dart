@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hey_notes/core/services/pdf_service.dart';
@@ -13,8 +12,7 @@ import 'package:hey_notes/providers/note_provider.dart';
 import 'package:hey_notes/screens/notes_page/create_edit_notes.dart/create_edit_note_state.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:pdf/pdf.dart';
-import 'package:pdf/widgets.dart' as pw;
+
 import 'package:share_plus/share_plus.dart';
 import 'package:swift_alert/swift_alert.dart';
 import 'package:uuid/uuid.dart';
@@ -27,6 +25,27 @@ class CreateEditNotesViewmodel extends StateNotifier<CreateEditNoteState> {
     state = state.copyWith(note: note);
     state = state.copyWith(isPinned: note?.isPinned ?? false);
     state = state.copyWith(categoryID: Optional.of(note?.categoryId));
+  }
+
+  void updateTitle(String title) {
+    if (state.note != null) {
+      state = state.copyWith(
+        note: state.note!.copyWith(title: title, updatedAt: DateTime.now()),
+      );
+    } else {
+      // Create a new note with the title if one doesn't exist yet
+      state = state.copyWith(
+        note: Note(
+          id: const Uuid().v4(),
+          title: title,
+          content: '',
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+          isPinned: false,
+          color: AppColors.getRandomNoteColor().toHexCode(),
+        ),
+      );
+    }
   }
 
   void setCategoryID(String? categoryID) {
@@ -164,7 +183,6 @@ class CreateEditNotesViewmodel extends StateNotifier<CreateEditNoteState> {
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),
       isPinned: state.isPinned,
-      //#FF9E9E
       color: AppColors.getRandomNoteColor().toHexCode(),
       categoryId: state.categoryID.valueOrNull,
       tags: [],

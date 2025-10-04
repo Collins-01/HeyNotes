@@ -255,11 +255,29 @@ class _CategorySelectionSheetState
             child: AppFilledButton(
               text: 'Save',
               onPressed: () {
-                final cat = categories.firstWhere(
-                  (e) => e.name == _selectedCategoryID,
-                );
-                widget.onSave(cat);
-                Navigator.of(context).pop();
+                try {
+                  // If no category is selected, use 'All' as default
+                  if (_selectedCategoryID == null) {
+                    widget.onSave(Category(name: 'All'));
+                    Navigator.of(context).pop();
+                    return;
+                  }
+
+                  // Try to find the selected category
+                  final category = categories.firstWhere(
+                    (e) => e.name == _selectedCategoryID,
+                    orElse: () => Category(name: 'All'), // Default to 'All' if not found
+                  );
+                  
+                  widget.onSave(category);
+                  Navigator.of(context).pop();
+                } catch (e) {
+                  // Fallback to 'All' category in case of any error
+                  if (mounted) {
+                    widget.onSave(Category(name: 'All'));
+                    Navigator.of(context).pop();
+                  }
+                }
               },
             ),
           ),

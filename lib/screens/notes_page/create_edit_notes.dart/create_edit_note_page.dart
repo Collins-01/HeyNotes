@@ -71,6 +71,7 @@ class _NoteViewScreenState extends ConsumerState<CreateEditNoteScreen> {
     final vm = ref.read(createEditNotesViewModel.notifier);
     final state = ref.watch(createEditNotesViewModel);
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.surface,
@@ -148,72 +149,87 @@ class _NoteViewScreenState extends ConsumerState<CreateEditNoteScreen> {
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: quill.QuillEditor.basic(
-          controller: _controller,
-          focusNode: _focusNode,
+      body: GestureDetector(
+        onTap: () {
+          // Unfocus when tapping outside
+          _focusNode?.unfocus();
+          FocusScope.of(context).unfocus();
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: quill.QuillEditor.basic(
+            config: const quill.QuillEditorConfig(
+              autoFocus: true,
+
+              scrollable: true,
+            ),
+            controller: _controller,
+            focusNode: _focusNode,
+          ),
         ),
       ),
-      bottomNavigationBar: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            vertical: UIHelpers.scaffoldPadding,
-          ),
-          child: Container(
-            height: 55,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(UIHelpers.borderRadiusLg),
-              color: AppColors.textBlack,
-            ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _customToolbarButton(
-                    icon: Icons.format_bold,
-                    onPressed: () => _toggleAttribute(quill.Attribute.bold),
-                    isToggled: _isAttributeActive(quill.Attribute.bold),
-                  ),
-                  _customToolbarButton(
-                    icon: Icons.format_italic,
-                    onPressed: () => _toggleAttribute(quill.Attribute.italic),
-                    isToggled: _isAttributeActive(quill.Attribute.italic),
-                  ),
-                  _customToolbarButton(
-                    icon: Icons.format_underline,
-                    onPressed: () =>
-                        _toggleAttribute(quill.Attribute.underline),
-                    isToggled: _isAttributeActive(quill.Attribute.underline),
-                  ),
-                  _customToolbarButton(
-                    icon: Icons.format_align_left,
-                    onPressed: () =>
-                        _toggleAttribute(quill.Attribute.leftAlignment),
-                    isToggled: _isAttributeActive(
-                      quill.Attribute.leftAlignment,
-                    ),
-                  ),
-                  _customToolbarButton(
-                    icon: Icons.format_align_center,
-                    onPressed: () =>
-                        _toggleAttribute(quill.Attribute.centerAlignment),
-                    isToggled: _isAttributeActive(
-                      quill.Attribute.centerAlignment,
-                    ),
-                  ),
-                  _customToolbarButton(
-                    icon: Icons.format_align_right,
-                    onPressed: () =>
-                        _toggleAttribute(quill.Attribute.rightAlignment),
-                    isToggled: _isAttributeActive(
-                      quill.Attribute.rightAlignment,
-                    ),
-                  ),
-                ],
+      bottomNavigationBar: Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+          left: UIHelpers.scaffoldPadding,
+          right: UIHelpers.scaffoldPadding,
+        ),
+        child: Container(
+          height: 55,
+          width: double.infinity,
+          margin: const EdgeInsets.only(bottom: 16),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(UIHelpers.borderRadiusLg),
+            color: AppColors.textBlack,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 8,
+                offset: const Offset(0, -2),
               ),
+            ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _customToolbarButton(
+                  icon: Icons.format_bold,
+                  onPressed: () => _toggleAttribute(quill.Attribute.bold),
+                  isToggled: _isAttributeActive(quill.Attribute.bold),
+                ),
+                _customToolbarButton(
+                  icon: Icons.format_italic,
+                  onPressed: () => _toggleAttribute(quill.Attribute.italic),
+                  isToggled: _isAttributeActive(quill.Attribute.italic),
+                ),
+                _customToolbarButton(
+                  icon: Icons.format_underline,
+                  onPressed: () => _toggleAttribute(quill.Attribute.underline),
+                  isToggled: _isAttributeActive(quill.Attribute.underline),
+                ),
+                _customToolbarButton(
+                  icon: Icons.format_align_left,
+                  onPressed: () =>
+                      _toggleAttribute(quill.Attribute.leftAlignment),
+                  isToggled: _isAttributeActive(quill.Attribute.leftAlignment),
+                ),
+                _customToolbarButton(
+                  icon: Icons.format_align_center,
+                  onPressed: () =>
+                      _toggleAttribute(quill.Attribute.centerAlignment),
+                  isToggled: _isAttributeActive(
+                    quill.Attribute.centerAlignment,
+                  ),
+                ),
+                _customToolbarButton(
+                  icon: Icons.format_align_right,
+                  onPressed: () =>
+                      _toggleAttribute(quill.Attribute.rightAlignment),
+                  isToggled: _isAttributeActive(quill.Attribute.rightAlignment),
+                ),
+              ],
             ),
           ),
         ),
@@ -282,25 +298,11 @@ class _NoteViewScreenState extends ConsumerState<CreateEditNoteScreen> {
         _controller.formatSelection(quill.Attribute.clone(attribute, null));
       }
     }
+    setState(() {});
   }
 
   bool _isAttributeActive(quill.Attribute attribute) {
     final style = _controller.getSelectionStyle();
     return style.attributes.containsKey(attribute.key);
-  }
-
-  void _clearFormatting() {
-    final selection = _controller.selection;
-    if (!selection.isCollapsed) {
-      _controller.formatSelection(
-        quill.Attribute.clone(quill.Attribute.bold, null),
-      );
-      _controller.formatSelection(
-        quill.Attribute.clone(quill.Attribute.italic, null),
-      );
-      _controller.formatSelection(
-        quill.Attribute.clone(quill.Attribute.underline, null),
-      );
-    }
   }
 }

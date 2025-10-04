@@ -13,7 +13,7 @@ class CategoryService {
         AppLogger.d('Registering CategoryAdapter');
         Hive.registerAdapter(CategoryAdapter());
       }
-      
+
       AppLogger.d('Opening Hive box: $_boxName');
       _categoriesBox = await Hive.openBox<Category>(_boxName);
       AppLogger.i('Successfully opened Hive box: $_boxName');
@@ -21,8 +21,9 @@ class CategoryService {
       // Add default categories if the box is empty
       if (_categoriesBox.isEmpty) {
         AppLogger.d('Box is empty, adding default categories');
-        // await _addDefaultCategories();
       } else {
+        // this will only show when we have at least one category
+        _addAllCategory();
         AppLogger.d('Found ${_categoriesBox.length} existing categories');
       }
     } catch (e, stackTrace) {
@@ -31,29 +32,19 @@ class CategoryService {
     }
   }
 
-  Future<void> _addDefaultCategories() async {
+  Future<void> _addAllCategory() async {
     try {
       AppLogger.i('Adding default categories');
-      final defaultCategories = [
-        Category(name: 'All'),
-        Category(name: 'Personal'),
-        Category(name: 'Work'),
-        Category(name: 'Ideas'),
-        Category(name: 'To Do'),
-        Category(name: 'Shopping'),
-        Category(name: 'Favorites'),
-        Category(name: 'Important'),
-        Category(name: 'Travel'),
-        Category(name: 'Recipes'),
-        Category(name: 'Other'),
-      ];
+      final defaultCategories = [Category(name: 'All')];
 
       AppLogger.d('Adding ${defaultCategories.length} default categories');
       for (var category in defaultCategories) {
         await _categoriesBox.put(category.name, category);
         AppLogger.v('Added category: ${category.name}');
       }
-      AppLogger.i('Successfully added ${defaultCategories.length} default categories');
+      AppLogger.i(
+        'Successfully added ${defaultCategories.length} default categories',
+      );
     } catch (e, stackTrace) {
       AppLogger.e('Error adding default categories', e, stackTrace);
       rethrow;
@@ -76,6 +67,13 @@ class CategoryService {
   List<Category> getAllCategories() {
     try {
       final categories = _categoriesBox.values.toList();
+      // sort in a way that `all` starts first. regardless if whether another category starts with `a` or `A`
+      categories.sort((a, b) {
+        if (a.name.toLowerCase() == 'all') return -1;
+        if (b.name.toLowerCase() == 'all') return 1;
+        return a.name.compareTo(b.name);
+      });
+
       AppLogger.v('Retrieved ${categories.length} categories');
       return categories;
     } catch (e, stackTrace) {

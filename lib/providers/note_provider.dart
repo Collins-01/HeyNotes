@@ -34,4 +34,8 @@ class NoteNotifier extends StateNotifier<List<Note>> {
     await _notesService.deleteNote(id);
     state = state.where((note) => note.id != id).toList();
   }
+
+  Future<void> getAllNotes() async {
+    state = _notesService.getAllNotes();
+  }
 }

@@ -13,12 +13,12 @@ import 'package:hey_notes/extension/extension.dart';
 import 'package:hey_notes/models/note.dart';
 import 'package:hey_notes/providers/category_provider.dart';
 import 'package:hey_notes/screens/home/components/category_button.dart';
-import 'package:hey_notes/screens/home/components/notes_card.dart';
 import 'package:hey_notes/screens/home/homepage/homepage_viewmodel.dart';
 import 'package:hey_notes/screens/home/settings_page.dart';
 import 'package:hey_notes/screens/notes_page/create_edit_notes.dart/create_edit_note_page.dart';
 import 'package:hey_notes/widgets/custom_image.dart';
 import 'package:hey_notes/widgets/note_card.dart';
+import 'package:swift_alert/swift_alert.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -240,6 +240,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 return Padding(
                   padding: const EdgeInsets.symmetric(horizontal: UIHelpers.sm),
                   child: GestureDetector(
+                    onLongPress: () {},
                     onTap: () {
                       vm.setDate(date);
                     },
@@ -308,6 +309,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     children: [
                       ...categories.map(
                         (category) => CategoryButton(
+                          onDelete: () {
+                            if (category.name.toLowerCase() == 'all') {
+                              SwiftAlert.display(
+                                context,
+                                message: 'You cannot delete the "All" category',
+                                type: NotificationType.warning,
+                              );
+                              return;
+                            }
+                            vm.deleteCategory(category.name);
+                          },
                           onTap: () {
                             vm.setCategory(category.name);
                           },

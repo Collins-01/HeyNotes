@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hey_notes/core/services/categories_service.dart';
+import 'package:hey_notes/core/utils/logger.dart';
 import 'package:hey_notes/service_locator.dart';
 import 'package:hive/hive.dart';
 import '../models/category.dart';
@@ -18,6 +19,11 @@ class CategoryNotifier extends StateNotifier<List<Category>> {
 
   Future<void> _loadCategories() async {
     state = _categoryService.getAllCategories();
+  }
+
+  Future<void> getAllCategories() async {
+    state = _categoryService.getAllCategories();
+    AppLogger.v('Categories loaded: ${state.length}');
   }
 
   Future<void> addCategory(String name) async {

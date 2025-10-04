@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hey_notes/enums/note_sort.dart';
 import 'package:hey_notes/models/note.dart';
+import 'package:hey_notes/providers/category_provider.dart';
 import 'package:hey_notes/providers/note_provider.dart';
 import 'package:hey_notes/screens/home/homepage/homepage_state.dart';
 
@@ -10,74 +11,87 @@ class HomepageViewmodel extends StateNotifier<HomepageState> {
   HomepageViewmodel(this.ref) : super(HomepageState.initial());
 
   void onInit() async {
-    final notes = ref.read(noteProvider);
-    state = state.copyWith(notes: notes);
-    // Apply the current sort order to the initial notes
-    sortNotes(state.sortOrder);
     loadCategories();
-
-    // reset selected category and date
-    state = state.copyWith(
-      selectedCategoryID: 'all',
-      selectedDate: DateTime.now(),
-    );
+    resetFilters();
   }
 
-  void loadCategories() {}
+  void resetFilters() {
+    state = state.copyWith(
+      selectedDate: DateTime.now(),
+      searchQuery: '',
+      notes: ref.read(noteProvider),
+      sortOrder: NoteSort.newestFirst,
+    );
+    applyFilters();
+  }
+
+  void loadNotes() {
+    ref.read(noteProvider.notifier).getAllNotes();
+    state = state.copyWith(notes: ref.read(noteProvider));
+  }
+
+  void loadCategories() {
+    ref.read(categoryProvider.notifier).getAllCategories();
+    final categories = ref.read(categoryProvider);
+    if (categories.isNotEmpty) {
+      state = state.copyWith(selectedCategoryID: categories.first.name);
+    }
+  }
 
   void setSelectedCategoryID(String id) {
     state = state.copyWith(selectedCategoryID: id);
+    applyFilters();
   }
 
   void setDate(DateTime date) {
     state = state.copyWith(selectedDate: date);
-    filterByDate();
-  }
-
-  void filterByDate() {
-    final notes = ref.read(noteProvider);
-    final filteredNotes = notes.where((note) {
-      return note.createdAt.year == state.selectedDate.year &&
-          note.createdAt.month == state.selectedDate.month &&
-          note.createdAt.day == state.selectedDate.day;
-    }).toList();
-    state = state.copyWith(notes: filteredNotes);
+    applyFilters();
   }
 
   void searchNotes(String query) {
-    if (query.isEmpty) {
-      // If search query is empty, show all notes
-      final allNotes = ref.read(noteProvider);
-      state = state.copyWith(notes: allNotes, searchQuery: '');
-      return;
-    }
-
-    final notes = ref.read(noteProvider);
-    final searchQuery = query.toLowerCase();
-
-    final filteredNotes = notes.where((note) {
-      final titleMatch = note.title.toLowerCase().contains(searchQuery);
-      final contentMatch = note.content.toLowerCase().contains(searchQuery);
-      return titleMatch || contentMatch;
-    }).toList();
-
-    state = state.copyWith(notes: filteredNotes, searchQuery: searchQuery);
+    state = state.copyWith(searchQuery: query);
+    applyFilters();
   }
 
   void setCategory(String id) {
     state = state.copyWith(selectedCategoryID: id);
-    filterByCategory();
+    applyFilters();
   }
 
-  void filterByCategory() {
-    final notes = ref.read(noteProvider);
-    if (state.selectedCategoryID?.toLowerCase() == 'all') {
-      state = state.copyWith(notes: notes);
-      return;
+  /// Applies all active filters to the notes list
+  void applyFilters() {
+    final allNotes = ref.read(noteProvider);
+
+    // Start with all notes and apply filters in sequence
+    var filteredNotes = List<Note>.from(allNotes);
+
+    // Apply search filter if query is not empty
+    if (state.searchQuery.isNotEmpty) {
+      final searchQuery = state.searchQuery.toLowerCase();
+      filteredNotes = filteredNotes.where((note) {
+        final titleMatch = note.title.toLowerCase().contains(searchQuery);
+        final contentMatch = note.content.toLowerCase().contains(searchQuery);
+        return titleMatch || contentMatch;
+      }).toList();
     }
-    final filteredNotes = notes.where((note) {
-      return note.categoryId == state.selectedCategoryID;
+
+    // Apply date filter if a date is selected
+    final selectedDate = state.selectedDate;
+    filteredNotes = filteredNotes.where((note) {
+      return note.createdAt.year == selectedDate.year &&
+          note.createdAt.month == selectedDate.month &&
+          note.createdAt.day == selectedDate.day;
     }).toList();
+
+    // Apply category filter if not 'all'
+    if (state.selectedCategoryID?.toLowerCase() != 'all') {
+      final categoryId = state.selectedCategoryID?.toLowerCase();
+      filteredNotes = filteredNotes
+          .where((note) => note.categoryId?.toLowerCase() == categoryId)
+          .toList();
+    }
+
+    // Update state with filtered notes
     state = state.copyWith(notes: filteredNotes);
   }
 
@@ -86,13 +100,15 @@ class HomepageViewmodel extends StateNotifier<HomepageState> {
 
     switch (sortBy) {
       case NoteSort.newestFirst:
-        notes.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+        notes.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
         break;
       case NoteSort.oldestFirst:
-        notes.sort((a, b) => a.createdAt.compareTo(b.createdAt));
+        notes.sort((a, b) => a.updatedAt.compareTo(b.updatedAt));
         break;
       case NoteSort.byTitle:
-        notes.sort((a, b) => a.title.compareTo(b.title));
+        notes.sort(
+          (a, b) => a.title.toLowerCase().compareTo(b.title.toLowerCase()),
+        );
         break;
     }
 
@@ -100,10 +116,16 @@ class HomepageViewmodel extends StateNotifier<HomepageState> {
   }
 
   void deleteNote(String noteId) {
-    final notes = List<Note>.from(state.notes);
-    notes.removeWhere((note) => note.id == noteId);
     ref.read(noteProvider.notifier).deleteNote(noteId);
-    state = state.copyWith(notes: notes);
+    state = state.copyWith(
+      notes: state.notes.where((note) => note.id != noteId).toList(),
+    );
+  }
+
+  void deleteCategory(String name) {
+    ref.read(categoryProvider.notifier).deleteCategory(name);
+    state = state.copyWith(selectedCategoryID: 'all');
+    loadCategories();
   }
 }
 

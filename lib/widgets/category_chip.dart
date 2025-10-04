@@ -27,19 +27,19 @@ class CategoryChip extends ConsumerWidget {
         label: Text(
           label,
           style: theme.textTheme.labelLarge?.copyWith(
-            color: isSelected ? theme.colorScheme.onPrimary : textColor,
+            color: isSelected ? theme.colorScheme.onPrimary : textColor?.withValues(alpha: 0.8),
           ),
         ),
         selected: isSelected,
         onSelected: (_) => onSelected(),
-        backgroundColor: backgroundColor?.withOpacity(0.1) ?? theme.colorScheme.surfaceVariant,
+        backgroundColor: backgroundColor?.withValues(alpha: 0.1) ?? theme.colorScheme.surfaceContainerHighest,
         selectedColor: theme.colorScheme.primary,
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
         labelPadding: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
           side: BorderSide(
-            color: isSelected ? theme.colorScheme.primary : theme.colorScheme.outline.withOpacity(0.2),
+            color: isSelected ? theme.colorScheme.primary : theme.colorScheme.outline.withValues(alpha: 0.2),
             width: 1,
           ),
         ),

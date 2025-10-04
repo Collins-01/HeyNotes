@@ -1,7 +1,5 @@
-import 'dart:io';
-
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:hey_notes/core/utils/dialogs.dart';
 import 'package:hey_notes/core/utils/ui_helpers.dart';
 import '../models/note.dart';
 
@@ -18,50 +16,12 @@ class NoteCard extends StatelessWidget {
   });
 
   Future<void> _showDeleteDialog(BuildContext context) async {
-    final isConfirmed =
-        await showDialog<bool>(
-          context: context,
-          builder: (context) => Platform.isIOS || Platform.isMacOS
-              ? CupertinoAlertDialog(
-                  title: const Text('Delete Note'),
-                  content: const Text(
-                    'Are you sure you want to delete this note?',
-                  ),
-                  actions: [
-                    CupertinoDialogAction(
-                      onPressed: () => Navigator.of(context).pop(false),
-                      child: const Text('Cancel'),
-                    ),
-                    CupertinoDialogAction(
-                      onPressed: () => Navigator.of(context).pop(true),
-                      isDestructiveAction: true,
-                      child: const Text('Delete'),
-                    ),
-                  ],
-                )
-              : AlertDialog(
-                  title: const Text('Delete Note'),
-                  content: const Text(
-                    'Are you sure you want to delete this note?',
-                  ),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.of(context).pop(false),
-                      child: const Text('CANCEL'),
-                    ),
-                    TextButton(
-                      onPressed: () => Navigator.of(context).pop(true),
-                      style: TextButton.styleFrom(
-                        foregroundColor: Theme.of(context).colorScheme.error,
-                      ),
-                      child: const Text('DELETE'),
-                    ),
-                  ],
-                ),
-        ) ??
-        false;
+    final isConfirmed = await AppDialogs.showDeleteConfirmation(
+      context: context,
+      itemName: note.title,
+    );
 
-    if (isConfirmed && context.mounted && onDelete != null) {
+    if (isConfirmed && onDelete != null) {
       onDelete!();
     }
   }

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:hey_notes/core/services/pdf_service.dart';
-import 'package:hey_notes/core/theme/app_colors.dart';
+import 'package:hey_notes/core/theme/app_colors.dart' show AppColors;
 import 'package:hey_notes/core/utils/ui_helpers.dart';
 import 'package:hey_notes/models/note.dart';
 import 'package:hey_notes/screens/notes_page/create_edit_notes.dart/create_edit_notes_viewmodel.dart';

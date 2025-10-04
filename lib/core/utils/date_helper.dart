@@ -1,11 +1,12 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:swift_alert/swift_alert.dart';
 
 /// A helper class for handling date-related operations with platform-specific UIs.
 class DateHelper {
   /// Shows a platform-appropriate date picker dialog.
-  /// 
+  ///
   /// Returns the selected date, or null if the user cancels the dialog.
   static Future<DateTime?> showNativeDatePicker({
     required BuildContext context,
@@ -19,15 +20,15 @@ class DateHelper {
   }) async {
     final ThemeData theme = Theme.of(context);
     final bool isIOS = theme.platform == TargetPlatform.iOS;
-    
+
     final DateTime effectiveInitialDate = initialDate ?? DateTime.now();
     final DateTime effectiveFirstDate = firstDate ?? DateTime(2000);
     final DateTime effectiveLastDate = lastDate ?? DateTime(2100);
-    
+
     if (isIOS) {
       // iOS-style date picker
       DateTime? selectedDate = effectiveInitialDate;
-      
+
       final result = await showModalBottomSheet<DateTime>(
         context: context,
         isScrollControlled: true,
@@ -80,7 +81,7 @@ class DateHelper {
           );
         },
       );
-      
+
       return result;
     } else {
       // Android-style date picker
@@ -107,7 +108,7 @@ class DateHelper {
   }
 
   /// Formats a DateTime object into a human-readable string.
-  /// 
+  ///
   /// [date] - The date to format
   /// [format] - The format string (defaults to 'MMMM d, y')
   static String formatDate(DateTime date, {String format = 'MMMM d, y'}) {
@@ -115,7 +116,7 @@ class DateHelper {
   }
 
   /// Shows a snackbar with the selected date information.
-  /// 
+  ///
   /// [context] - The build context
   /// [date] - The selected date to display
   /// [message] - Optional custom message (will include date if not provided)
@@ -128,20 +129,11 @@ class DateHelper {
   }) {
     if (context.mounted) {
       final formattedDate = formatDate(date);
-      final snackBar = SnackBar(
-        content: Text(message ?? 'Selected date: $formattedDate'),
-        duration: duration,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
+      SwiftAlert.display(
+        context,
+        type: NotificationType.success,
+        message: message ?? 'Selected date: $formattedDate',
       );
-      
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(snackBar);
     }
   }
 }
-
-

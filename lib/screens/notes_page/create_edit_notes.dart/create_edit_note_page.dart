@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
@@ -316,17 +315,18 @@ class _NoteViewScreenState extends ConsumerState<CreateEditNoteScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
+                      // Clear formatting button (first button)
                       _customToolbarButton(
-                        // icon: Icons.text_fields_rounded,
                         iconWidget: ShowSVG(
                           svgPath: IconAssets.textT,
                           height: 20,
                           width: 20,
-                          color: Theme.of(context).scaffoldBackgroundColor,
+                          color: _hasFormatting()
+                              ? AppColors.info
+                              : Theme.of(context).scaffoldBackgroundColor,
                         ),
-                        onPressed: () =>
-                            _toggleAttribute(quill.Attribute.style),
-                        isToggled: false,
+                        onPressed: _clearAllFormatting,
+                        isToggled: _hasFormatting(),
                       ),
                       _customToolbarButton(
                         icon: Icons.format_bold,
@@ -350,7 +350,7 @@ class _NoteViewScreenState extends ConsumerState<CreateEditNoteScreen> {
                       _customToolbarButton(
                         icon: Icons.format_align_left,
                         onPressed: () =>
-                            _toggleAttribute(quill.Attribute.leftAlignment),
+                            _toggleAlignment(quill.Attribute.leftAlignment),
                         isToggled: _isAttributeActive(
                           quill.Attribute.leftAlignment,
                         ),
@@ -358,7 +358,7 @@ class _NoteViewScreenState extends ConsumerState<CreateEditNoteScreen> {
                       _customToolbarButton(
                         icon: Icons.format_align_center,
                         onPressed: () =>
-                            _toggleAttribute(quill.Attribute.centerAlignment),
+                            _toggleAlignment(quill.Attribute.centerAlignment),
                         isToggled: _isAttributeActive(
                           quill.Attribute.centerAlignment,
                         ),
@@ -366,7 +366,7 @@ class _NoteViewScreenState extends ConsumerState<CreateEditNoteScreen> {
                       _customToolbarButton(
                         icon: Icons.format_align_right,
                         onPressed: () =>
-                            _toggleAttribute(quill.Attribute.rightAlignment),
+                            _toggleAlignment(quill.Attribute.rightAlignment),
                         isToggled: _isAttributeActive(
                           quill.Attribute.rightAlignment,
                         ),
@@ -425,6 +425,7 @@ class _NoteViewScreenState extends ConsumerState<CreateEditNoteScreen> {
     );
   }
 
+  // Toggle regular attributes (bold, italic, underline)
   void _toggleAttribute(quill.Attribute attribute) {
     final selection = _controller.selection;
     if (selection.isCollapsed) {
@@ -441,12 +442,104 @@ class _NoteViewScreenState extends ConsumerState<CreateEditNoteScreen> {
       } else {
         _controller.formatSelection(quill.Attribute.clone(attribute, null));
       }
-    } 
+    }
     setState(() {});
   }
 
+  // Toggle alignment (only one alignment can be active at a time)
+  void _toggleAlignment(quill.Attribute attribute) {
+    final selection = _controller.selection;
+    final currentStyle = _controller.getSelectionStyle();
+
+    // Check if the clicked alignment is already active
+    final isCurrentlyActive = currentStyle.attributes.containsKey(
+      attribute.key,
+    );
+
+    // Clear all alignments first
+    final alignmentAttributes = [
+      quill.Attribute.leftAlignment,
+      quill.Attribute.centerAlignment,
+      quill.Attribute.rightAlignment,
+      quill.Attribute.justifyAlignment,
+    ];
+
+    for (final alignAttr in alignmentAttributes) {
+      if (currentStyle.attributes.containsKey(alignAttr.key)) {
+        _controller.formatSelection(quill.Attribute.clone(alignAttr, null));
+      }
+    }
+
+    // If it wasn't active before, apply the new alignment
+    // If it was active, leave it cleared (return to default/left)
+    if (!isCurrentlyActive) {
+      _controller.formatSelection(attribute);
+    }
+
+    setState(() {});
+  }
+
+  // Clear all formatting
+  void _clearAllFormatting() {
+    final selection = _controller.selection;
+    final currentStyle = _controller.getSelectionStyle();
+
+    // List of all attributes to clear
+    List<quill.Attribute> attributesToClear = [
+      quill.Attribute.bold,
+      quill.Attribute.italic,
+      quill.Attribute.underline,
+      quill.Attribute.strikeThrough,
+      quill.Attribute.link,
+      quill.Attribute.color,
+      quill.Attribute.background,
+      quill.Attribute.h1,
+      quill.Attribute.h2,
+      quill.Attribute.h3,
+      quill.Attribute.ol,
+      quill.Attribute.ul,
+      quill.Attribute.checked,
+      quill.Attribute.codeBlock,
+      quill.Attribute.blockQuote,
+      quill.Attribute.codeBlock,
+      quill.Attribute.indent,
+      quill.Attribute.leftAlignment,
+      quill.Attribute.centerAlignment,
+      quill.Attribute.rightAlignment,
+      quill.Attribute.justifyAlignment,
+    ];
+
+    // Clear each attribute if it exists
+    for (final attribute in attributesToClear) {
+      if (currentStyle.attributes.containsKey(attribute.key)) {
+        _controller.formatSelection(quill.Attribute.clone(attribute, null));
+      }
+    }
+
+    setState(() {});
+  }
+
+  // Check if any formatting is currently active
+  bool _hasFormatting() {
+    final style = _controller.getSelectionStyle();
+    return style.attributes.isNotEmpty;
+  }
+
+  // Check if a specific attribute is active
   bool _isAttributeActive(quill.Attribute attribute) {
     final style = _controller.getSelectionStyle();
+
+    // For alignment attributes, check the actual value
+    if (attribute.key == 'align') {
+      final currentAlign = style.attributes['align'];
+      if (currentAlign == null) {
+        // No alignment set means left alignment (default)
+        return attribute.value == 'left';
+      }
+      return currentAlign.value == attribute.value;
+    }
+
+    // For other attributes, just check if key exists
     return style.attributes.containsKey(attribute.key);
   }
 }

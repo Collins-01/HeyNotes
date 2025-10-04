@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hey_notes/core/utils/logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:hey_notes/core/theme/app_theme.dart';
 
 enum AppThemeMode { system, light, dark }
 
@@ -15,64 +15,65 @@ class ThemeNotifier extends StateNotifier<ThemeMode> {
   Future<void> _loadTheme() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final themeIndex = prefs.getInt(_themeKey) ?? AppThemeMode.system.index;
-      state = ThemeMode.values[themeIndex];
+      final themeIndex = prefs.getInt(_themeKey);
+
+      if (themeIndex != null && themeIndex < ThemeMode.values.length) {
+        state = ThemeMode.values[themeIndex];
+        AppLogger.d('Loaded theme: ${state.name}');
+      }
     } catch (e) {
-      // If there's an error loading the theme, default to system theme
-      state = ThemeMode.system;
+      AppLogger.e('Error loading theme: $e');
     }
   }
 
   /// Changes the current theme to the specified [theme]
   Future<void> setTheme(AppThemeMode theme) async {
-    if ((theme == AppThemeMode.system && state == ThemeMode.system) ||
-        (theme == AppThemeMode.light && state == ThemeMode.light) ||
-        (theme == AppThemeMode.dark && state == ThemeMode.dark)) {
-      return;
-    }
+    final newThemeMode = _appThemeToThemeMode(theme);
 
-    final newThemeMode = theme == AppThemeMode.system
-        ? ThemeMode.system
-        : (theme == AppThemeMode.light ? ThemeMode.light : ThemeMode.dark);
+    if (state == newThemeMode) return;
 
+    AppLogger.i('Changing theme to ${newThemeMode.name}');
     state = newThemeMode;
 
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setInt(_themeKey, theme.index);
     } catch (e) {
-      debugPrint('Failed to save theme preference: $e');
+      AppLogger.e('Failed to save theme: $e');
     }
   }
 
-  /// Toggles between light and dark theme
-  void toggleTheme() {
-    setTheme(state == ThemeMode.light ? AppThemeMode.dark : AppThemeMode.light);
+  /// Toggles between light and dark theme (ignores system mode)
+  Future<void> toggleTheme() async {
+    final newTheme = state == ThemeMode.light
+        ? AppThemeMode.dark
+        : AppThemeMode.light;
+
+    await setTheme(newTheme);
   }
 
   /// Returns the current app theme mode
   AppThemeMode get currentThemeMode {
-    if (state == ThemeMode.system) return AppThemeMode.system;
-    return state == ThemeMode.light ? AppThemeMode.light : AppThemeMode.dark;
+    return switch (state) {
+      ThemeMode.system => AppThemeMode.system,
+      ThemeMode.light => AppThemeMode.light,
+      ThemeMode.dark => AppThemeMode.dark,
+    };
   }
 
-  /// Returns the current theme data based on the current brightness
-  ThemeData getThemeData(BuildContext context) {
-    final brightness = state == ThemeMode.system
-        ? MediaQuery.platformBrightnessOf(context)
-        : (state == ThemeMode.light ? Brightness.light : Brightness.dark);
-    
-    return brightness == Brightness.dark 
-        ? AppTheme.darkTheme 
-        : AppTheme.lightTheme;
-  }
-
-  /// Sets the theme mode (alias for setTheme for backward compatibility)
-  void setThemeMode(AppThemeMode theme) {
-    setTheme(theme);
+  /// Converts AppThemeMode to ThemeMode
+  ThemeMode _appThemeToThemeMode(AppThemeMode theme) {
+    return switch (theme) {
+      AppThemeMode.system => ThemeMode.system,
+      AppThemeMode.light => ThemeMode.light,
+      AppThemeMode.dark => ThemeMode.dark,
+    };
   }
 }
 
+// Provider for theme state
 final themeProvider = StateNotifierProvider<ThemeNotifier, ThemeMode>((ref) {
   return ThemeNotifier();
 });
+
+

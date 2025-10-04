@@ -1,33 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hey_notes/core/navigation/navigation_service.dart';
+import 'package:hey_notes/core/theme/app_theme.dart';
+import 'package:hey_notes/models/note.dart';
+import 'package:hey_notes/providers/theme_provider.dart';
+import 'package:hey_notes/screens/home/homepage/home_screen.dart';
 import 'package:hey_notes/screens/home/settings_page.dart';
-import 'core/navigation/navigation_service.dart';
-import 'core/theme/app_theme.dart';
-import 'models/note.dart';
-import 'screens/home/homepage/home_screen.dart';
-import 'screens/notes_page/note_view_screen.dart';
+import 'package:hey_notes/screens/notes_page/note_view_screen.dart';
 
-// Theme Provider
-final themeProvider = StateNotifierProvider<ThemeNotifier, ThemeMode>((ref) {
-  return ThemeNotifier();
-});
-
-class ThemeNotifier extends StateNotifier<ThemeMode> {
-  ThemeNotifier() : super(ThemeMode.system);
-
-  void toggleTheme() {
-    state = state == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
-  }
-
-  void setTheme(ThemeMode mode) {
-    state = mode;
-  }
-}
+// Theme Provider is defined in theme_provider.dart
 
 class AppRoutes {
   static const String home = '/';
   static const String noteView = '/view';
-  static const String noteEdit = '/edit';
 }
 
 class AppRouter {
@@ -59,26 +44,23 @@ class AppRouter {
   }
 }
 
-class App extends StatelessWidget {
+class App extends ConsumerWidget {
   const App({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return Consumer(
-      builder: (context, ref, _) {
-        final themeMode = ref.watch(themeProvider);
-
-        return MaterialApp(
-          title: 'Hey Notes',
-          debugShowCheckedModeBanner: false,
-          theme: AppTheme.lightTheme,
-          darkTheme: AppTheme.darkTheme,
-          themeMode: themeMode,
-          navigatorKey: NavigationService.navigatorKey,
-          onGenerateRoute: AppRouter.generateRoute,
-          initialRoute: AppRoutes.home,
-        );
-      },
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Use watch to listen to theme changes
+    final themeMode = ref.watch(themeProvider);
+    
+    return MaterialApp(
+      title: 'Hey Notes',
+      debugShowCheckedModeBanner: false,
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: themeMode,
+      navigatorKey: NavigationService.navigatorKey,
+      onGenerateRoute: AppRouter.generateRoute,
+      initialRoute: AppRoutes.home,
     );
   }
 }

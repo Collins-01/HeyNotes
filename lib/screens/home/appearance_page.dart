@@ -34,7 +34,7 @@ class ThemeOption extends ConsumerWidget {
 
     return GestureDetector(
       onTap: () {
-        ref.read(themeProvider.notifier).setThemeMode(mode);
+        ref.read(themeProvider.notifier).setTheme(mode);
       },
       child: Container(
         width: itemWidth,
@@ -94,12 +94,12 @@ class AppearancePage extends ConsumerStatefulWidget {
 class _AppearancePageState extends ConsumerState<AppearancePage> {
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(themeProvider);
-    final currentThemeMode = ref.read(themeProvider.notifier).currentThemeMode;
+    final currentThemeMode = ref.watch(themeProvider.notifier).currentThemeMode;
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         title: SlideInLeft(
           child: Text(
             'Appearance',

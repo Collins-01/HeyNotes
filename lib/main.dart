@@ -14,7 +14,7 @@ Future<void> main() async {
   // Ensure Flutter is initialized
   WidgetsFlutterBinding.ensureInitialized();
   // Initialize PDF fonts
-  await PdfExportService.initializeFonts();
+  // await PdfExportService.initializeFonts();
 
   /// setup locator
   setupLocator();

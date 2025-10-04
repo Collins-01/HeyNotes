@@ -70,10 +70,10 @@ class NoteCard extends StatelessWidget {
                 ],
               ),
               const Gap(UIHelpers.md),
-              if (note.content.isNotEmpty) ...[
+              if (note.getPlainText().isNotEmpty) ...[
                 Expanded(
                   child: Text(
-                    note.content,
+                    note.getPlainText(),
                     style: Theme.of(context).textTheme.bodyMedium,
                     overflow: TextOverflow.clip,
                     softWrap: true,

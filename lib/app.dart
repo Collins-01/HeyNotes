@@ -50,12 +50,12 @@ class App extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // Use watch to listen to theme changes
-    final themeMode = ref.watch(themeProvider);
-    
+    final themeMode = ref.watch(themeModeProvider);
+
     return MaterialApp(
       title: 'Hey Notes',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
+      theme: AppTheme.lightTheme, 
       darkTheme: AppTheme.darkTheme,
       themeMode: themeMode,
       navigatorKey: NavigationService.navigatorKey,

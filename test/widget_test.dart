@@ -41,9 +41,9 @@ void main() {
 
   testWidgets('Create and view a note', (WidgetTester tester) async {
     await tester.pumpWidget(
-      ProviderScope(
+      const ProviderScope(
         child: MaterialApp(
-          home: const HomeScreen(),
+          home: HomeScreen(),
           routes: {
             // '/edit': (context) => const CreateEditNotesPage(),
           },
@@ -115,7 +115,7 @@ void main() {
 
   testWidgets('Theme switching', (WidgetTester tester) async {
     await tester.pumpWidget(
-      ProviderScope(
+      const ProviderScope(
         child: MaterialApp(
           home: HomeScreen(),
         ),

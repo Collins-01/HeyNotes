@@ -1,4 +1,3 @@
-import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -76,11 +75,7 @@ class _NoteViewScreenState extends ConsumerState<CreateEditNoteScreen> {
     if (widget.note?.content.isNotEmpty ?? true) {
       try {
         // Parse the content as JSON and create a document from it
-        final contentJson = jsonDecode(widget.note!.content) as List<dynamic>;
-        _controller = quill.QuillController(
-          document: quill.Document.fromJson(contentJson),
-          selection: const TextSelection.collapsed(offset: 0),
-        );
+        _controller = widget.note!.toQuillController();
       } catch (e) {
         // Fallback to empty document if parsing fails
         _controller = quill.QuillController.basic();
@@ -153,7 +148,9 @@ class _NoteViewScreenState extends ConsumerState<CreateEditNoteScreen> {
                       callback: () {
                         Navigator.pop(context);
                         // Get the HomeScreen's viewmodel and refresh notes
-                        final homeVm = ref.read(homepageViewModelProvider.notifier);
+                        final homeVm = ref.read(
+                          homepageViewModelProvider.notifier,
+                        );
                         homeVm.loadNotes();
                         Navigator.of(context).pushReplacement(
                           MaterialPageRoute(
@@ -444,7 +441,7 @@ class _NoteViewScreenState extends ConsumerState<CreateEditNoteScreen> {
       } else {
         _controller.formatSelection(quill.Attribute.clone(attribute, null));
       }
-    }
+    } 
     setState(() {});
   }
 

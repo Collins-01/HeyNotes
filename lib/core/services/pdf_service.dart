@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
@@ -8,518 +9,339 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:share_plus/share_plus.dart';
 
-/// Service for exporting notes to PDF with Quill formatting
 class PdfExportService {
-  // Font cache to avoid reloading
-  static pw.Font? _regularFont;
-  static pw.Font? _boldFont;
-  static pw.Font? _italicFont;
-
-  /// Initialize fonts (call this once in your app initialization)
-  static Future<void> initializeFonts() async {
-    final regular = await rootBundle.load('assets/fonts/Avenir Regular.ttf');
-    _regularFont = pw.Font.ttf(regular);
-
-    final bold = await rootBundle.load('assets/fonts/Avenir Book.ttf');
-    _boldFont = pw.Font.ttf(bold);
-
-    final italic = await rootBundle.load('assets/fonts/Avenir Regular.ttf');
-    _italicFont = pw.Font.ttf(italic);
-  }
-
-  /// Get or load fonts
-  static Future<_FontSet> _getFonts() async {
-    if (_regularFont == null || _boldFont == null || _italicFont == null) {
-      await initializeFonts();
-    }
-    return _FontSet(
-      regular: _regularFont!,
-      bold: _boldFont!,
-      italic: _italicFont!,
-    );
-  }
-
-  /// Export note as PDF and return the file
-  static Future<File> exportToPdf(
-    Note note, {
-    PdfExportOptions? options,
-  }) async {
-    final opts = options ?? PdfExportOptions();
-    final fonts = await _getFonts();
+  /// Export a single note to PDF
+  static Future<File> exportNoteToPdf(Note note) async {
     final pdf = pw.Document();
 
-    // Parse Quill content
-    final quillDoc = note.toQuillController().document;
-    final pdfContent = _convertQuillToPdfWidgets(quillDoc, fonts, opts);
+    // Parse Quill Delta JSON
+    final deltaOps = _parseQuillDelta(note.content);
 
     pdf.addPage(
       pw.MultiPage(
-        pageFormat: opts.pageFormat,
-        margin: opts.margin,
-        build: (pw.Context context) {
-          return [
-            // Title
-            if (opts.includeTitle && note.title.isNotEmpty) ...[
+        pageFormat: PdfPageFormat.a4,
+        margin: pw.EdgeInsets.all(32),
+        build: (context) => [
+          // Title
+          pw.Header(
+            level: 0,
+            child: pw.Text(
+              note.title,
+              style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold),
+            ),
+          ),
+          pw.SizedBox(height: 10),
+
+          // Metadata
+          pw.Row(
+            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+            children: [
               pw.Text(
-                note.title,
-                style: pw.TextStyle(
-                  font: fonts.bold,
-                  fontSize: opts.titleFontSize,
-                ),
+                'Created: ${DateFormat('MMM dd, yyyy').format(note.createdAt)}',
+                style: pw.TextStyle(fontSize: 10, color: PdfColors.grey700),
               ),
-              pw.SizedBox(height: opts.sectionSpacing),
+              pw.Text(
+                'Updated: ${DateFormat('MMM dd, yyyy').format(note.updatedAt)}',
+                style: pw.TextStyle(fontSize: 10, color: PdfColors.grey700),
+              ),
             ],
+          ),
 
-            // Content with formatting
-            ...pdfContent,
-
-            if (opts.includeMetadata) ...[
-              pw.SizedBox(height: opts.sectionSpacing),
-
-              // Tags
-              if (opts.includeTags && note.tags.isNotEmpty) ...[
-                pw.Row(
-                  children: [
-                    pw.Text(
-                      'Tags: ',
-                      style: pw.TextStyle(
-                        font: fonts.bold,
-                        fontSize: opts.metadataFontSize,
+          // Tags
+          if (note.tags.isNotEmpty) ...[
+            pw.SizedBox(height: 5),
+            pw.Wrap(
+              spacing: 5,
+              children: note.tags
+                  .map(
+                    (tag) => pw.Container(
+                      padding: pw.EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: pw.BoxDecoration(
+                        color: PdfColors.blue100,
+                        borderRadius: pw.BorderRadius.circular(12),
+                      ),
+                      child: pw.Text(
+                        tag,
+                        style: pw.TextStyle(
+                          fontSize: 9,
+                          color: PdfColors.blue800,
+                        ),
                       ),
                     ),
-                    ...note.tags.map(
+                  )
+                  .toList(),
+            ),
+          ],
+
+          pw.SizedBox(height: 20),
+          pw.Divider(),
+          pw.SizedBox(height: 20),
+
+          // Content
+          ..._buildContentWidgets(deltaOps),
+        ],
+      ),
+    );
+
+    // Save PDF
+    final output = await _getOutputFile(note.title);
+    await output.writeAsBytes(await pdf.save());
+    return output;
+  }
+
+  /// Export multiple notes to a single PDF
+  static Future<File> exportMultipleNotesToPdf(
+    List<Note> notes, {
+    String filename = 'notes_export',
+  }) async {
+    final pdf = pw.Document();
+
+    for (var i = 0; i < notes.length; i++) {
+      final note = notes[i];
+      final deltaOps = _parseQuillDelta(note.content);
+
+      pdf.addPage(
+        pw.MultiPage(
+          pageFormat: PdfPageFormat.a4,
+          margin: pw.EdgeInsets.all(32),
+          build: (context) => [
+            // Title
+            pw.Header(
+              level: 0,
+              child: pw.Text(
+                note.title,
+                style: pw.TextStyle(
+                  fontSize: 24,
+                  fontWeight: pw.FontWeight.bold,
+                ),
+              ),
+            ),
+            pw.SizedBox(height: 10),
+
+            // Metadata
+            pw.Text(
+              'Created: ${DateFormat('MMM dd, yyyy').format(note.createdAt)}',
+              style: pw.TextStyle(fontSize: 10, color: PdfColors.grey700),
+            ),
+
+            // Tags
+            if (note.tags.isNotEmpty) ...[
+              pw.SizedBox(height: 5),
+              pw.Wrap(
+                spacing: 5,
+                children: note.tags
+                    .map(
                       (tag) => pw.Container(
-                        margin: const pw.EdgeInsets.only(right: 5),
-                        padding: const pw.EdgeInsets.symmetric(
+                        padding: pw.EdgeInsets.symmetric(
                           horizontal: 8,
-                          vertical: 2,
+                          vertical: 4,
                         ),
                         decoration: pw.BoxDecoration(
-                          color: PdfColors.grey300,
+                          color: PdfColors.blue100,
                           borderRadius: pw.BorderRadius.circular(12),
                         ),
                         child: pw.Text(
                           tag,
                           style: pw.TextStyle(
-                            font: fonts.regular,
-                            fontSize: opts.metadataFontSize - 1,
+                            fontSize: 9,
+                            color: PdfColors.blue800,
                           ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-                pw.SizedBox(height: 10),
-              ],
-
-              // Metadata section
-              pw.Divider(),
-              pw.SizedBox(height: 5),
-              pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                children: [
-                  pw.Text(
-                    'Created: ${DateFormat('dd MMM yyyy, hh:mm a').format(note.createdAt)}',
-                    style: pw.TextStyle(
-                      font: fonts.regular,
-                      fontSize: opts.metadataFontSize,
-                      color: PdfColors.grey700,
-                    ),
-                  ),
-                  pw.Text(
-                    'Updated: ${DateFormat('dd MMM yyyy, hh:mm a').format(note.updatedAt)}',
-                    style: pw.TextStyle(
-                      font: fonts.regular,
-                      fontSize: opts.metadataFontSize,
-                      color: PdfColors.grey700,
-                    ),
-                  ),
-                ],
-              ),
-              pw.SizedBox(height: 5),
-              pw.Text(
-                'Word count: ${note.wordCount} | Characters: ${note.characterCount}',
-                style: pw.TextStyle(
-                  font: fonts.regular,
-                  fontSize: opts.metadataFontSize,
-                  color: PdfColors.grey700,
-                ),
+                    )
+                    .toList(),
               ),
             ],
-          ];
-        },
-      ),
-    );
 
-    // Save to file
-    final directory = await getTemporaryDirectory();
-    final fileName = _sanitizeFileName(
-      note.title.isEmpty ? 'note' : note.title,
-    );
-    final file = File(
-      '${directory.path}/${fileName}_${DateTime.now().millisecondsSinceEpoch}.pdf',
-    );
-    await file.writeAsBytes(await pdf.save());
-    return file;
-  }
+            pw.SizedBox(height: 20),
+            pw.Divider(),
+            pw.SizedBox(height: 20),
 
-  /// Export and share via share sheet
-  static Future<void> exportAndShare(
-    Note note, {
-    PdfExportOptions? options,
-    String? customMessage,
-  }) async {
-    final file = await exportToPdf(note, options: options);
+            // Content
+            ..._buildContentWidgets(deltaOps),
 
-    await Share.shareXFiles(
-      [XFile(file.path)],
-      subject: 'Note: ${note.title.isNotEmpty ? note.title : 'Untitled'}',
-      text: customMessage ?? 'Here\'s your exported note as PDF',
-    );
-  }
-
-  /// Export and save to device storage
-  static Future<File> exportAndSave(
-    Note note, {
-    PdfExportOptions? options,
-    String? customPath,
-  }) async {
-    final file = await exportToPdf(note, options: options);
-
-    // Determine save location
-    final Directory saveDir;
-    if (customPath != null) {
-      saveDir = Directory(customPath);
-    } else {
-      final baseDir = Platform.isAndroid
-          ? await getExternalStorageDirectory()
-          : await getApplicationDocumentsDirectory();
-      saveDir = Directory('${baseDir?.path}/Notes');
-    }
-
-    // Create directory if it doesn't exist
-    await saveDir.create(recursive: true);
-
-    // Copy file to destination
-    final fileName = _sanitizeFileName(
-      note.title.isEmpty ? 'note' : note.title,
-    );
-    final savedFile = File('${saveDir.path}/$fileName.pdf');
-    await file.copy(savedFile.path);
-
-    return savedFile;
-  }
-
-  /// Export multiple notes to a single PDF
-  static Future<File> exportMultipleNotes(
-    List<Note> notes, {
-    String title = 'Notes Export',
-    PdfExportOptions? options,
-  }) async {
-    final opts = options ?? PdfExportOptions();
-    final fonts = await _getFonts();
-    final pdf = pw.Document();
-
-    for (int i = 0; i < notes.length; i++) {
-      final note = notes[i];
-      final quillDoc = note.toQuillController().document;
-      final pdfContent = _convertQuillToPdfWidgets(quillDoc, fonts, opts);
-
-      pdf.addPage(
-        pw.MultiPage(
-          pageFormat: opts.pageFormat,
-          margin: opts.margin,
-          build: (pw.Context context) {
-            return [
-              // Note title
-              pw.Text(
-                note.title.isEmpty ? 'Untitled Note ${i + 1}' : note.title,
-                style: pw.TextStyle(
-                  font: fonts.bold,
-                  fontSize: opts.titleFontSize,
-                ),
-              ),
-              pw.SizedBox(height: opts.sectionSpacing),
-
-              // Content
-              ...pdfContent,
-
-              // Separator between notes
-              if (i < notes.length - 1) ...[
-                pw.SizedBox(height: 20),
-                pw.Divider(thickness: 2),
-                pw.SizedBox(height: 20),
-              ],
-            ];
-          },
+            // Add page break between notes (except last one)
+            if (i < notes.length - 1) pw.SizedBox(height: 40),
+          ],
         ),
       );
     }
 
-    // Save to file
-    final directory = await getTemporaryDirectory();
-    final file = File(
-      '${directory.path}/${_sanitizeFileName(title)}_${DateTime.now().millisecondsSinceEpoch}.pdf',
-    );
-    await file.writeAsBytes(await pdf.save());
-    return file;
+    // Save PDF
+    final output = await _getOutputFile(filename);
+    await output.writeAsBytes(await pdf.save());
+    return output;
   }
 
-  // ==================== PRIVATE HELPER METHODS ====================
+  /// Share PDF file
+  static Future<void> sharePdf(File pdfFile) async {
+    await Share.shareXFiles([XFile(pdfFile.path)]);
+  }
 
-  static List<pw.Widget> _convertQuillToPdfWidgets(
-    quill.Document document,
-    _FontSet fonts,
-    PdfExportOptions options,
-  ) {
-    final List<pw.Widget> widgets = [];
-    final delta = document.toDelta();
-
-    for (final op in delta.toList()) {
-      final data = op.data;
-      final attributes = op.attributes;
-
-      if (data is! String) continue;
-
-      // Handle block-level formatting
-      if (attributes != null) {
-        // Headings
-        if (attributes.containsKey('header')) {
-          final level = attributes['header'];
-          final fontSize = level == 1
-              ? options.heading1Size
-              : level == 2
-              ? options.heading2Size
-              : options.heading3Size;
-          widgets.add(
-            pw.Padding(
-              padding: const pw.EdgeInsets.only(top: 10, bottom: 5),
-              child: pw.Text(
-                data.trim(),
-                style: pw.TextStyle(font: fonts.bold, fontSize: fontSize),
-              ),
-            ),
-          );
-          continue;
-        }
-
-        // Lists
-        if (attributes.containsKey('list')) {
-          final listType = attributes['list'];
-          final bullet = listType == 'ordered' ? '  •  ' : '  •  ';
-          widgets.add(
-            pw.Padding(
-              padding: const pw.EdgeInsets.only(left: 20, bottom: 2),
-              child: pw.Row(
-                crossAxisAlignment: pw.CrossAxisAlignment.start,
-                children: [
-                  pw.Text(bullet, style: pw.TextStyle(font: fonts.regular)),
-                  pw.Expanded(
-                    child: pw.Text(
-                      data.trim(),
-                      style: _getTextStyle(attributes, fonts, options),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-          continue;
-        }
-
-        // Code block
-        if (attributes.containsKey('code-block')) {
-          widgets.add(
-            pw.Container(
-              margin: const pw.EdgeInsets.symmetric(vertical: 5),
-              padding: const pw.EdgeInsets.all(10),
-              decoration: pw.BoxDecoration(
-                color: PdfColors.grey200,
-                borderRadius: pw.BorderRadius.circular(4),
-              ),
-              child: pw.Text(
-                data,
-                style: pw.TextStyle(
-                  font: fonts.regular,
-                  fontSize: options.bodyFontSize - 2,
-                  fontFallback: [pw.Font.courier()],
-                ),
-              ),
-            ),
-          );
-          continue;
-        }
-
-        // Blockquote
-        if (attributes.containsKey('blockquote')) {
-          widgets.add(
-            pw.Container(
-              margin: const pw.EdgeInsets.symmetric(vertical: 5),
-              padding: const pw.EdgeInsets.only(left: 15, top: 5, bottom: 5),
-              decoration: const pw.BoxDecoration(
-                border: pw.Border(
-                  left: pw.BorderSide(color: PdfColors.grey, width: 3),
-                ),
-              ),
-              child: pw.Text(
-                data.trim(),
-                style: pw.TextStyle(
-                  font: fonts.italic,
-                  fontSize: options.bodyFontSize,
-                  color: PdfColors.grey800,
-                ),
-              ),
-            ),
-          );
-          continue;
-        }
+  /// Parse Quill Delta JSON
+  static List<Map<String, dynamic>> _parseQuillDelta(String deltaJson) {
+    try {
+      final decoded = json.decode(deltaJson);
+      if (decoded is List) {
+        return List<Map<String, dynamic>>.from(decoded);
+      } else if (decoded is Map && decoded.containsKey('ops')) {
+        return List<Map<String, dynamic>>.from(decoded['ops']);
       }
+      return [];
+    } catch (e) {
+      print('Error parsing Quill Delta: $e');
+      return [];
+    }
+  }
 
-      // Regular text with inline formatting
-      final lines = data.split('\n');
-      for (int i = 0; i < lines.length; i++) {
-        if (lines[i].trim().isNotEmpty) {
-          widgets.add(
-            pw.Padding(
-              padding: const pw.EdgeInsets.only(bottom: 3),
-              child: pw.Text(
-                lines[i],
-                style: _getTextStyle(attributes, fonts, options),
+  /// Build PDF widgets from Quill Delta operations
+  static List<pw.Widget> _buildContentWidgets(List<Map<String, dynamic>> ops) {
+    final widgets = <pw.Widget>[];
+
+    for (var op in ops) {
+      final insert = op['insert'];
+      final attributes = op['attributes'] as Map<String, dynamic>?;
+
+      if (insert == null) continue;
+
+      // Handle different insert types
+      if (insert is String) {
+        // Text content
+        final text = insert;
+
+        // Handle line breaks
+        if (text == '\n') {
+          // Check for special formatting (headers, lists, etc.)
+          if (attributes != null) {
+            if (attributes.containsKey('header')) {
+              // Headers are handled by the previous text, so just add spacing
+              widgets.add(pw.SizedBox(height: 10));
+              continue;
+            } else if (attributes.containsKey('list')) {
+              // Lists are handled by the previous text
+              continue;
+            }
+          }
+          widgets.add(pw.SizedBox(height: 8));
+          continue;
+        }
+
+        // Build text style
+        pw.TextStyle style = pw.TextStyle(fontSize: 12);
+
+        if (attributes != null) {
+          // Bold
+          if (attributes['bold'] == true) {
+            style = style.copyWith(fontWeight: pw.FontWeight.bold);
+          }
+
+          // Italic
+          if (attributes['italic'] == true) {
+            style = style.copyWith(fontStyle: pw.FontStyle.italic);
+          }
+
+          // Underline
+          if (attributes['underline'] == true) {
+            style = style.copyWith(decoration: pw.TextDecoration.underline);
+          }
+
+          // Strike
+          if (attributes['strike'] == true) {
+            style = style.copyWith(decoration: pw.TextDecoration.lineThrough);
+          }
+
+          // Header
+          if (attributes.containsKey('header')) {
+            final level = attributes['header'];
+            final fontSize = level == 1 ? 20.0 : (level == 2 ? 16.0 : 14.0);
+            style = pw.TextStyle(
+              fontSize: fontSize,
+              fontWeight: pw.FontWeight.bold,
+            );
+          }
+
+          // Code block
+          if (attributes['code-block'] == true) {
+            widgets.add(
+              pw.Container(
+                padding: pw.EdgeInsets.all(8),
+                decoration: pw.BoxDecoration(
+                  color: PdfColors.grey200,
+                  borderRadius: pw.BorderRadius.circular(4),
+                ),
+                child: pw.Text(
+                  text,
+                  style: pw.TextStyle(font: pw.Font.times()),
+                ),
+              ),
+            );
+            continue;
+          }
+
+          // List
+          if (attributes.containsKey('list')) {
+            final listType = attributes['list'];
+            final bullet = listType == 'ordered' ? '1. ' : '• ';
+            widgets.add(
+              pw.Padding(
+                padding: pw.EdgeInsets.only(left: 20, bottom: 4),
+                child: pw.Row(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Text(bullet, style: style),
+                    pw.Expanded(child: pw.Text(text, style: style)),
+                  ],
+                ),
+              ),
+            );
+            continue;
+          }
+        }
+
+        // Regular text
+        widgets.add(pw.Text(text, style: style));
+      } else if (insert is Map) {
+        // Handle embeds (images, etc.)
+        // For now, just show a placeholder
+        widgets.add(
+          pw.Container(
+            padding: pw.EdgeInsets.all(8),
+            decoration: pw.BoxDecoration(
+              border: pw.Border.all(color: PdfColors.grey400),
+              borderRadius: pw.BorderRadius.circular(4),
+            ),
+            child: pw.Text(
+              '[Embedded content: ${insert.keys.first}]',
+              style: pw.TextStyle(
+                color: PdfColors.grey600,
+                fontStyle: pw.FontStyle.italic,
               ),
             ),
-          );
-        } else if (i < lines.length - 1) {
-          widgets.add(pw.SizedBox(height: 5));
-        }
+          ),
+        );
+        widgets.add(pw.SizedBox(height: 8));
       }
     }
 
     return widgets;
   }
 
-  static pw.TextStyle _getTextStyle(
-    Map<String, dynamic>? attributes,
-    _FontSet fonts,
-    PdfExportOptions options,
-  ) {
-    if (attributes == null) {
-      return pw.TextStyle(font: fonts.regular, fontSize: options.bodyFontSize);
-    }
-
-    final isBold = attributes.containsKey('bold');
-    final isItalic = attributes.containsKey('italic');
-    final isUnderline = attributes.containsKey('underline');
-    final isStrikethrough = attributes.containsKey('strike');
-
-    // Determine font
-    pw.Font font = fonts.regular;
-    if (isBold) {
-      font = fonts.bold;
-    } else if (isItalic) {
-      font = fonts.italic;
-    }
-
-    // Get color if exists
-    PdfColor? color;
-    if (attributes.containsKey('color')) {
-      try {
-        final colorString = attributes['color'] as String;
-        final hexColor = colorString.replaceAll('#', '');
-        final colorValue = int.parse(hexColor, radix: 16);
-        color = PdfColor.fromInt(colorValue | 0xFF000000);
-      } catch (e) {
-        color = null;
-      }
-    }
-
-    return pw.TextStyle(
-      font: font,
-      fontSize: options.bodyFontSize,
-      color: color,
-      decoration: isUnderline
-          ? pw.TextDecoration.underline
-          : isStrikethrough
-          ? pw.TextDecoration.lineThrough
-          : null,
-    );
+  /// Get output file path
+  static Future<File> _getOutputFile(String name) async {
+    final directory = await getApplicationDocumentsDirectory();
+    final fileName =
+        '${_sanitizeFileName(name)}_${DateTime.now().millisecondsSinceEpoch}.pdf';
+    return File('${directory.path}/$fileName');
   }
 
-  static String _sanitizeFileName(String fileName) {
-    return fileName
+  /// Sanitize filename
+  static String _sanitizeFileName(String name) {
+    return name
         .replaceAll(RegExp(r'[^\w\s-]'), '')
         .replaceAll(RegExp(r'\s+'), '_')
-        .substring(0, fileName.length > 50 ? 50 : fileName.length);
+        .substring(0, name.length > 50 ? 50 : name.length);
   }
-}
-
-// ==================== CONFIGURATION CLASSES ====================
-
-class PdfExportOptions {
-  final PdfPageFormat pageFormat;
-  final pw.EdgeInsets margin;
-  final bool includeTitle;
-  final bool includeMetadata;
-  final bool includeTags;
-  final double titleFontSize;
-  final double heading1Size;
-  final double heading2Size;
-  final double heading3Size;
-  final double bodyFontSize;
-  final double metadataFontSize;
-  final double sectionSpacing;
-
-  PdfExportOptions({
-    this.pageFormat = PdfPageFormat.a4,
-    this.margin = const pw.EdgeInsets.all(40),
-    this.includeTitle = true,
-    this.includeMetadata = true,
-    this.includeTags = true,
-    this.titleFontSize = 24,
-    this.heading1Size = 20,
-    this.heading2Size = 16,
-    this.heading3Size = 14,
-    this.bodyFontSize = 12,
-    this.metadataFontSize = 9,
-    this.sectionSpacing = 20,
-  });
-
-  /// Preset: Minimal (no metadata)
-  factory PdfExportOptions.minimal() {
-    return PdfExportOptions(includeMetadata: false, includeTags: false);
-  }
-
-  /// Preset: Compact (smaller fonts and margins)
-  factory PdfExportOptions.compact() {
-    return PdfExportOptions(
-      margin: const pw.EdgeInsets.all(20),
-      titleFontSize: 20,
-      heading1Size: 16,
-      heading2Size: 14,
-      heading3Size: 12,
-      bodyFontSize: 10,
-      metadataFontSize: 8,
-      sectionSpacing: 10,
-    );
-  }
-
-  /// Preset: Large print
-  factory PdfExportOptions.largePrint() {
-    return PdfExportOptions(
-      titleFontSize: 32,
-      heading1Size: 26,
-      // heading2Size = 22,
-      heading3Size: 18,
-      bodyFontSize: 16,
-      metadataFontSize: 12,
-      sectionSpacing: 30,
-    );
-  }
-}
-
-class _FontSet {
-  final pw.Font regular;
-  final pw.Font bold;
-  final pw.Font italic;
-
-  _FontSet({required this.regular, required this.bold, required this.italic});
 }

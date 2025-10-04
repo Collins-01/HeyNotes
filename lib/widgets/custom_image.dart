@@ -243,7 +243,7 @@ class CustomImage extends StatelessWidget {
         color: Colors.grey[300],
         borderRadius: borderRadius,
       ),
-      child: Center(
+      child: const Center(
         child: SizedBox(
           height: 24,
           width: 24,

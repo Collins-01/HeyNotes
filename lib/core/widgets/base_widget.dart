@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../utils/ui_helpers.dart';
 
 abstract class BaseWidget<T extends ConsumerWidget> extends ConsumerWidget {
-  const BaseWidget({Key? key}) : super(key: key);
+  const BaseWidget({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -17,7 +17,7 @@ abstract class BaseWidget<T extends ConsumerWidget> extends ConsumerWidget {
 }
 
 class BaseStatefulWidget extends ConsumerStatefulWidget {
-  const BaseStatefulWidget({Key? key}) : super(key: key);
+  const BaseStatefulWidget({super.key});
 
   @override
   ConsumerState<BaseStatefulWidget> createState() => _BaseStatefulWidgetState();

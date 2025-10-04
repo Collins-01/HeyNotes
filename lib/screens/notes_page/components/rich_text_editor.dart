@@ -43,7 +43,7 @@ class FormattingToolbar extends StatelessWidget {
   final Function(TextAlignment) onAlignmentChanged;
 
   const FormattingToolbar({
-    Key? key,
+    super.key,
     required this.isBold,
     required this.isItalic,
     required this.isUnderline,
@@ -52,7 +52,7 @@ class FormattingToolbar extends StatelessWidget {
     required this.onToggleItalic,
     required this.onToggleUnderline,
     required this.onAlignmentChanged,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

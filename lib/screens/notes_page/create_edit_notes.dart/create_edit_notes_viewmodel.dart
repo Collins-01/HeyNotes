@@ -70,7 +70,7 @@ class CreateEditNotesViewmodel extends StateNotifier<CreateEditNoteState> {
 
     // Add content
     if (note.content.isNotEmpty) {
-      shareContent.writeln(note.content);
+      shareContent.writeln(note.getPlainText());
     }
 
     // Add tags if they exist
@@ -96,8 +96,8 @@ class CreateEditNotesViewmodel extends StateNotifier<CreateEditNoteState> {
       );
     }
 
-    if (note.content.isNotEmpty) {
-      content.writeln(note.content);
+    if (note.getPlainText().isNotEmpty) {
+      content.writeln(note.getPlainText());
     }
 
     if (note.tags.isNotEmpty) {
@@ -135,7 +135,12 @@ class CreateEditNotesViewmodel extends StateNotifier<CreateEditNoteState> {
   }
 
   Future<void> exportAndShareAsPdf(Note note) async {
-    await PdfExportService.exportAndShare(note);
+    final pdfFile = await PdfExportService.exportMultipleNotesToPdf(
+      [note],
+      filename:
+          'my_notes_${note.title}_${DateTime.now().millisecondsSinceEpoch}',
+    );
+    await PdfExportService.sharePdf(pdfFile);
   }
 
   void saveNote(
@@ -179,7 +184,7 @@ class CreateEditNotesViewmodel extends StateNotifier<CreateEditNoteState> {
     final note = Note(
       id: const Uuid().v4(),
       title: plainText.generateTitle, // Use plain text for title
-      content: content, // Store Quill JSON string
+      content: Note.quillToString(controller), // Store Quill JSON string
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),
       isPinned: state.isPinned,

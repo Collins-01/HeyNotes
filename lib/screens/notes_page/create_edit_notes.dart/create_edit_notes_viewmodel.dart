@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hey_notes/core/theme/app_colors.dart';
 import 'package:hey_notes/extension/extension.dart';
 import 'package:hey_notes/models/note.dart';
 import 'package:hey_notes/models/option.dart';
@@ -217,6 +218,7 @@ class CreateEditNotesViewmodel extends StateNotifier<CreateEditNoteState> {
               isPinned: state.isPinned,
               categoryId: state.categoryID.valueOrNull,
               tags: state.note!.tags,
+              color: state.note!.color,
             ),
           );
       SwiftAlert.display(
@@ -235,6 +237,8 @@ class CreateEditNotesViewmodel extends StateNotifier<CreateEditNoteState> {
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),
       isPinned: state.isPinned,
+      //#FF9E9E
+      color: AppColors.getRandomNoteColor().toHexCode(),
       categoryId: state.categoryID.valueOrNull,
       tags: [],
     );

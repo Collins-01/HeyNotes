@@ -98,6 +98,13 @@ class HomepageViewmodel extends StateNotifier<HomepageState> {
 
     state = state.copyWith(notes: notes, sortOrder: sortBy);
   }
+
+  void deleteNote(String noteId) {
+    final notes = List<Note>.from(state.notes);
+    notes.removeWhere((note) => note.id == noteId);
+    ref.read(noteProvider.notifier).deleteNote(noteId);
+    state = state.copyWith(notes: notes);
+  }
 }
 
 final homepageViewModelProvider =

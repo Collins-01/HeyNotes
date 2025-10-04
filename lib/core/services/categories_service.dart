@@ -21,7 +21,7 @@ class CategoryService {
       // Add default categories if the box is empty
       if (_categoriesBox.isEmpty) {
         AppLogger.d('Box is empty, adding default categories');
-        await _addDefaultCategories();
+        // await _addDefaultCategories();
       } else {
         AppLogger.d('Found ${_categoriesBox.length} existing categories');
       }

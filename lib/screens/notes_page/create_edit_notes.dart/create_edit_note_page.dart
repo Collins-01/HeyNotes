@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hey_notes/core/services/pdf_service.dart';
 import 'package:hey_notes/core/theme/app_colors.dart';
 import 'package:hey_notes/core/utils/ui_helpers.dart';
 import 'package:hey_notes/models/note.dart';
@@ -117,7 +118,7 @@ class _NoteViewScreenState extends ConsumerState<CreateEditNoteScreen> {
           const SizedBox(width: 8),
 
           Visibility(
-            visible: widget.note != null,
+            visible: state.note != null,
             child: PopupMenuButton<ShareOption>(
               icon: const Icon(Icons.share_outlined),
               tooltip: 'Share',
@@ -128,7 +129,9 @@ class _NoteViewScreenState extends ConsumerState<CreateEditNoteScreen> {
                 } else if (option == ShareOption.textFile) {
                   await vm.exportAndShareAsTextFile(context, widget.note!);
                 } else if (option == ShareOption.pdf) {
-                  await vm.exportAndShareAsPdf(context, widget.note!);
+                  if (state.note != null) {
+                    await vm.exportAndShareAsPdf(state.note!);
+                  }
                 }
               },
               itemBuilder: (context) => [
@@ -150,6 +153,8 @@ class _NoteViewScreenState extends ConsumerState<CreateEditNoteScreen> {
         ],
       ),
       body: GestureDetector(
+        behavior: HitTestBehavior.opaque, // Makes the whole area tappable
+
         onTap: () {
           // Unfocus when tapping outside
           _focusNode?.unfocus();
@@ -160,7 +165,7 @@ class _NoteViewScreenState extends ConsumerState<CreateEditNoteScreen> {
           child: quill.QuillEditor.basic(
             config: const quill.QuillEditorConfig(
               autoFocus: true,
-
+              textInputAction: TextInputAction.done,
               scrollable: true,
             ),
             controller: _controller,

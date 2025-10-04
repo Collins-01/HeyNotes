@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hey_notes/core/services/pdf_service.dart';
 import 'package:hey_notes/core/services/services.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'screens/splash/splash_screen.dart';
@@ -12,6 +13,10 @@ import 'service_locator.dart';
 Future<void> main() async {
   // Ensure Flutter is initialized
   WidgetsFlutterBinding.ensureInitialized();
+  // Initialize PDF fonts
+  await PdfExportService.initializeFonts();
+
+  /// setup locator
   setupLocator();
 
   try {

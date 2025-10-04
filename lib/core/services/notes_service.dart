@@ -16,7 +16,7 @@ class NotesService {
       // Add sample notes if the box is empty
       if (box.isEmpty) {
         AppLogger.d('Box is empty, adding sample notes');
-        await _addSampleNotes();
+        // await _addSampleNotes();
       } else {
         AppLogger.d('Found ${box.length} existing notes');
       }

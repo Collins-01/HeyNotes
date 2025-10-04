@@ -149,7 +149,7 @@ class _CategorySelectionSheetState
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final size = MediaQuery.of(context).size;
-    final categories = ref.read(categoryProvider);
+    final categories = ref.watch(categoryProvider);
     return Container(
       padding: const EdgeInsets.all(16),
       height: size.height * 0.6,

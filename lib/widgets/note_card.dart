@@ -97,7 +97,7 @@ class NoteCard extends StatelessWidget {
                   child: Text(
                     note.content,
                     style: Theme.of(context).textTheme.bodyMedium,
-                    overflow: TextOverflow.visible,
+                    overflow: TextOverflow.clip,
                     softWrap: true,
                   ),
                 ),

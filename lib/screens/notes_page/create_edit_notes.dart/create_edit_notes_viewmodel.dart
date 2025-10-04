@@ -3,13 +3,17 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hey_notes/extension/extension.dart';
 import 'package:hey_notes/models/note.dart';
+import 'package:hey_notes/providers/note_provider.dart';
 import 'package:hey_notes/screens/notes_page/create_edit_notes.dart/create_edit_note_state.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:share_plus/share_plus.dart';
+import 'package:swift_alert/swift_alert.dart';
+import 'package:uuid/uuid.dart';
 
 class CreateEditNotesViewmodel extends StateNotifier<CreateEditNoteState> {
   final Ref ref;
@@ -21,7 +25,6 @@ class CreateEditNotesViewmodel extends StateNotifier<CreateEditNoteState> {
 
   void toggleIsPinned() {
     bool isPinned = state.isPinned;
-
     state = state.copyWith(isPinned: !isPinned);
   }
 
@@ -178,6 +181,55 @@ class CreateEditNotesViewmodel extends StateNotifier<CreateEditNoteState> {
         );
       }
     }
+  }
+
+  void saveNote(
+    BuildContext context, {
+    required String content,
+    String? categoryID,
+    VoidCallback? callback,
+  }) {
+    bool isEdit = state.note != null;
+    if (isEdit) {
+      ref
+          .read(noteProvider.notifier)
+          .updateNote(
+            Note(
+              id: state.note!.id,
+              title: content.generateTitle,
+              content: content,
+              createdAt: state.note!.createdAt,
+              updatedAt: DateTime.now(),
+              isPinned: state.isPinned,
+              categoryId: state.note!.categoryId,
+              tags: state.note!.tags,
+            ),
+          );
+      SwiftAlert.display(
+        context,
+        message: 'Note updated successfully',
+        type: NotificationType.success,
+      );
+      callback?.call();
+      return;
+    }
+    final note = Note(
+      id: const Uuid().v4(),
+      title: content.generateTitle,
+      content: content,
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+      isPinned: state.isPinned,
+      categoryId: categoryID,
+      tags: state.note!.tags,
+    );
+    ref.read(noteProvider.notifier).addNote(note);
+    SwiftAlert.display(
+      context,
+      message: 'Note saved successfully',
+      type: NotificationType.success,
+    );
+    callback?.call();
   }
 }
 

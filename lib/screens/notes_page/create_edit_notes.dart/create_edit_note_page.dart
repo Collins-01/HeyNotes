@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hey_notes/models/note.dart';
-import 'package:hey_notes/providers/category_provider.dart';
 import 'package:hey_notes/screens/notes_page/components/rich_text_editor.dart';
 import 'package:hey_notes/screens/notes_page/create_edit_notes.dart/create_edit_notes_viewmodel.dart';
 import 'package:hey_notes/widgets/category_selection_sheet.dart';
@@ -66,71 +65,6 @@ class _NoteViewScreenState extends ConsumerState<CreateEditNoteScreen> {
     });
   }
 
-  Future<void> _deleteNote(BuildContext context, WidgetRef ref) async {
-    final shouldDelete = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete Note'),
-        content: const Text(
-          'Are you sure you want to delete this note? This action cannot be undone.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('CANCEL'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(
-              foregroundColor: Theme.of(context).colorScheme.error,
-            ),
-            child: const Text('DELETE'),
-          ),
-        ],
-      ),
-    );
-
-    if (shouldDelete == true && context.mounted) {
-      try {
-        // await ref.read(noteProvider.notifier).deleteNote(widget.note.id);
-        if (context.mounted) {
-          Navigator.pop(context);
-        }
-      } catch (e) {
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Failed to delete note: ${e.toString()}'),
-              backgroundColor: Theme.of(context).colorScheme.error,
-            ),
-          );
-        }
-      }
-    }
-  }
-
-  Future<void> _shareNote(BuildContext context) async {
-    final result = await showModalBottomSheet<ShareOption>(
-      context: context,
-      builder: (context) => const ShareOptionsBottomSheet(),
-    );
-    final vm = ref.read(createEditNotesViewModel.notifier);
-
-    if (result == null) return;
-
-    switch (result) {
-      case ShareOption.text:
-        await vm.shareAsText(widget.note!);
-        break;
-      case ShareOption.textFile:
-        await vm.exportAndShareAsTextFile(context, widget.note!);
-        break;
-      case ShareOption.pdf:
-        await vm.exportAndShareAsPdf(context, widget.note!);
-        break;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final vm = ref.read(createEditNotesViewModel.notifier);
@@ -147,9 +81,6 @@ class _NoteViewScreenState extends ConsumerState<CreateEditNoteScreen> {
           IconButton(
             icon: const Icon(Icons.save_rounded),
             onPressed: () {
-              // Get all categories from the provider
-              final categories = ref.read(categoryProvider);
-
               showModalBottomSheet(
                 context: context,
                 isScrollControlled: true,
@@ -158,24 +89,15 @@ class _NoteViewScreenState extends ConsumerState<CreateEditNoteScreen> {
                 ),
                 builder: (context) => CategorySelectionSheet(
                   selectedCategoryID: state.note?.categoryId,
-                  onSave: (selectedCategories) {
-                    if (widget.note != null) {
-                      // Update note with selected categories
-
-                      // Save the updated note
-                      // ref.read(noteProvider.notifier).updateNote(updatedNote);
-
-                      // Show success message
-                      if (mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              'Note saved with selected categories',
-                            ),
-                          ),
-                        );
-                      }
-                    }
+                  onSave: (category) {
+                    vm.saveNote(
+                      context,
+                      content: _controller.document.toPlainText(),
+                      categoryID: category?.name,
+                      callback: () {
+                        Navigator.pop(context);
+                      },
+                    );
                   },
                 ),
               );
@@ -183,7 +105,9 @@ class _NoteViewScreenState extends ConsumerState<CreateEditNoteScreen> {
             tooltip: 'Save',
           ),
           IconButton(
-            icon: const Icon(Icons.push_pin_outlined),
+            icon: state.isPinned
+                ? const Icon(Icons.close)
+                : const Icon(Icons.push_pin_outlined),
             onPressed: () => vm.toggleIsPinned(),
             tooltip: 'Delete',
           ),

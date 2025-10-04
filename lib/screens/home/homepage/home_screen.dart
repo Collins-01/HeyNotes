@@ -16,7 +16,7 @@ import 'package:hey_notes/screens/home/components/category_button.dart';
 import 'package:hey_notes/screens/home/components/notes_card.dart';
 import 'package:hey_notes/screens/home/homepage/homepage_viewmodel.dart';
 import 'package:hey_notes/screens/home/settings_page.dart';
-import 'package:hey_notes/screens/notes_page/note_view_screen.dart';
+import 'package:hey_notes/screens/notes_page/create_edit_notes.dart/create_edit_note_page.dart';
 import 'package:hey_notes/widgets/custom_image.dart';
 import 'package:hey_notes/widgets/note_card.dart';
 

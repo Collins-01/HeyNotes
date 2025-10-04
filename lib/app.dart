@@ -6,7 +6,7 @@ import 'package:hey_notes/models/note.dart';
 import 'package:hey_notes/providers/theme_provider.dart';
 import 'package:hey_notes/screens/home/homepage/home_screen.dart';
 import 'package:hey_notes/screens/home/settings_page.dart';
-import 'package:hey_notes/screens/notes_page/note_view_screen.dart';
+import 'package:hey_notes/screens/notes_page/create_edit_notes.dart/create_edit_note_page.dart';
 
 // Theme Provider is defined in theme_provider.dart
 

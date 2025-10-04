@@ -3,23 +3,30 @@
   
   # Hey Notes
 
-  A beautiful and intuitive note-taking app built with Flutter. Organize your thoughts, ideas, and tasks with ease.
+  A beautiful and intuitive note-taking app built with Flutter. Organize your thoughts, ideas, and tasks with rich text editing and powerful organization features.
   
   [![Flutter](https://img.shields.io/badge/Flutter-02569B?style=for-the-badge&logo=flutter&logoColor=white)](https://flutter.dev/)
   [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
   
-  <img src="screenshots/app_screenshot.png" alt="App Screenshot" width="300"/>
+  <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin: 20px 0;">
+    <img src="screenshots/IMG_5672.PNG" alt="Home Screen" width="200"/>
+    <img src="screenshots/IMG_5673.PNG" alt="Note Editor" width="200"/>
+    <img src="screenshots/IMG_5674.PNG" alt="Rich Text Formatting" width="200"/>
+  </div>
 </div>
 
 ## ✨ Features
 
-- 📝 Create, view, edit, and delete notes
-- 🔍 Search through your notes by title or content
-- 🏷️ Add tags to organize your notes
-- 🌓 Light and dark theme support
-- 📤 Share notes as text or export as files (TXT/PDF)
-- 🔄 Auto-save and local storage with Hive
-- 📱 Responsive design for all screen sizes
+- 🎨 **Rich Text Editing** - Format your notes with bold, italic, underline, and more
+- 📂 **Category Management** - Organize notes into custom categories
+- 🔍 **Powerful Search** - Quickly find notes by title or content
+- 🌓 **Theme Support** - Light and dark themes for comfortable viewing
+- 📤 **Export & Share** - Export notes as PDF or share them directly
+- 📍 **Pinning** - Pin important notes for quick access
+- 🗂 **Tagging** - Add tags to organize and filter your notes
+- 🔄 **Auto-save** - Never lose your work with automatic saving
+- 📱 **Responsive Design** - Works on phones and tablets of all sizes
+- 🔒 **Local Storage** - Your data stays on your device with Hive database
 
 ## 🚀 Getting Started
 
@@ -88,9 +95,14 @@ flutter run
 
 ## 📱 Screenshots
 
-| Home Screen | Note Editor | Dark Theme |
-|-------------|-------------|------------|
-| ![Home](screenshots/home.png) | ![Editor](screenshots/editor.png) | ![Dark](screenshots/dark_theme.png) |
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin: 20px 0;">
+  <img src="screenshots/IMG_5672.PNG" alt="Home Screen" style="border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+  <img src="screenshots/IMG_5673.PNG" alt="Note Editor" style="border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+  <img src="screenshots/IMG_5674.PNG" alt="Rich Text Formatting" style="border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+  <img src="screenshots/IMG_5675.PNG" alt="Category Selection" style="border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+  <img src="screenshots/IMG_5676.PNG" alt="Dark Theme" style="border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+  <img src="screenshots/IMG_5678.PNG" alt="Note Options" style="border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+</div>
 
 ## 🛡️ Permissions
 

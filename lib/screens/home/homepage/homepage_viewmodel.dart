@@ -11,6 +11,7 @@ class HomepageViewmodel extends StateNotifier<HomepageState> {
   HomepageViewmodel(this.ref) : super(HomepageState.initial());
 
   void onInit() async {
+    loadNotes();
     loadCategories();
     resetFilters();
   }

@@ -10,7 +10,6 @@ import 'package:hey_notes/core/utils/utils.dart';
 import 'package:hey_notes/enums/menu_action.dart';
 import 'package:hey_notes/enums/note_sort.dart';
 import 'package:hey_notes/extension/extension.dart';
-import 'package:hey_notes/models/note.dart';
 import 'package:hey_notes/providers/category_provider.dart';
 import 'package:hey_notes/screens/home/components/category_button.dart';
 import 'package:hey_notes/screens/home/homepage/homepage_viewmodel.dart';

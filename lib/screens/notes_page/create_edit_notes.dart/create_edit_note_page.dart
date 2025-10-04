@@ -152,6 +152,9 @@ class _NoteViewScreenState extends ConsumerState<CreateEditNoteScreen> {
                       controller: _controller,
                       callback: () {
                         Navigator.pop(context);
+                        // Get the HomeScreen's viewmodel and refresh notes
+                        final homeVm = ref.read(homepageViewModelProvider.notifier);
+                        homeVm.loadNotes();
                         Navigator.of(context).pushReplacement(
                           MaterialPageRoute(
                             builder: (context) => const HomeScreen(),

@@ -61,9 +61,7 @@ class _NoteViewScreenState extends ConsumerState<CreateEditNoteScreen> {
     super.initState();
     _focusNode = FocusNode();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref
-          .read(createEditNotesViewModel.notifier)
-          .onInt(widget.note?.isPinned ?? false);
+      ref.read(createEditNotesViewModel.notifier).onInt(widget.note);
       _controller.document.insert(0, widget.note?.content ?? '');
     });
   }
@@ -94,10 +92,10 @@ class _NoteViewScreenState extends ConsumerState<CreateEditNoteScreen> {
                 builder: (context) => CategorySelectionSheet(
                   selectedCategoryID: state.note?.categoryId,
                   onSave: (category) {
+                    vm.setCategoryID(category?.name);
                     vm.saveNote(
                       context,
-                      content: _controller.document.toPlainText(),
-                      categoryID: category?.name,
+                      controller: _controller,
                       callback: () {
                         Navigator.pop(context);
                       },

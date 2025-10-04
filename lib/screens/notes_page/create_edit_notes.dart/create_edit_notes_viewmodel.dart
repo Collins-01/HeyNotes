@@ -2,9 +2,11 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hey_notes/extension/extension.dart';
 import 'package:hey_notes/models/note.dart';
+import 'package:hey_notes/models/option.dart';
 import 'package:hey_notes/providers/note_provider.dart';
 import 'package:hey_notes/screens/notes_page/create_edit_notes.dart/create_edit_note_state.dart';
 import 'package:intl/intl.dart';
@@ -17,10 +19,16 @@ import 'package:uuid/uuid.dart';
 
 class CreateEditNotesViewmodel extends StateNotifier<CreateEditNoteState> {
   final Ref ref;
-  CreateEditNotesViewmodel(this.ref) : super(const CreateEditNoteState());
+  CreateEditNotesViewmodel(this.ref) : super(CreateEditNoteState.initial());
 
-  onInt(bool value) {
-    state = state.copyWith(isPinned: value);
+  void onInt(Note? note) {
+    state = state.copyWith(note: note);
+    state = state.copyWith(isPinned: note?.isPinned ?? false);
+    state = state.copyWith(categoryID: Optional.of(note?.categoryId));
+  }
+
+  void setCategoryID(String? categoryID) {
+    state = state.copyWith(categoryID: Optional.of(categoryID));
   }
 
   void toggleIsPinned() {
@@ -185,23 +193,29 @@ class CreateEditNotesViewmodel extends StateNotifier<CreateEditNoteState> {
 
   void saveNote(
     BuildContext context, {
-    required String content,
-    String? categoryID,
+    required QuillController controller,
     VoidCallback? callback,
   }) {
+    // Convert Quill content to string
+    final content = Note.quillToString(controller);
+
+    // Get plain text for title generation
+    final plainText = controller.document.toPlainText().trim();
+
     bool isEdit = state.note != null;
+
     if (isEdit) {
       ref
           .read(noteProvider.notifier)
           .updateNote(
             Note(
               id: state.note!.id,
-              title: content.generateTitle,
-              content: content,
+              title: plainText.generateTitle, // Use plain text for title
+              content: content, // Store Quill JSON string
               createdAt: state.note!.createdAt,
               updatedAt: DateTime.now(),
               isPinned: state.isPinned,
-              categoryId: state.note!.categoryId,
+              categoryId: state.categoryID.valueOrNull,
               tags: state.note!.tags,
             ),
           );
@@ -213,16 +227,18 @@ class CreateEditNotesViewmodel extends StateNotifier<CreateEditNoteState> {
       callback?.call();
       return;
     }
+
     final note = Note(
       id: const Uuid().v4(),
-      title: content.generateTitle,
-      content: content,
+      title: plainText.generateTitle, // Use plain text for title
+      content: content, // Store Quill JSON string
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),
       isPinned: state.isPinned,
-      categoryId: categoryID,
-      tags: state.note!.tags,
+      categoryId: state.categoryID.valueOrNull,
+      tags: [],
     );
+
     ref.read(noteProvider.notifier).addNote(note);
     SwiftAlert.display(
       context,

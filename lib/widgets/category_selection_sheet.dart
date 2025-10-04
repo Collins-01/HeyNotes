@@ -5,6 +5,8 @@ import 'package:hey_notes/core/theme/app_colors.dart';
 import 'package:hey_notes/core/utils/ui_helpers.dart';
 import 'package:hey_notes/models/category.dart';
 import 'package:hey_notes/providers/category_provider.dart';
+import 'package:hey_notes/widgets/buttons/filled_button.dart';
+import 'package:swift_alert/swift_alert.dart';
 
 class CategorySelectionSheet extends ConsumerStatefulWidget {
   final String? selectedCategoryID;
@@ -27,10 +29,120 @@ class _CategorySelectionSheetState
     extends ConsumerState<CategorySelectionSheet> {
   late String? _selectedCategoryID;
 
+  final TextEditingController _categoryController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
     _selectedCategoryID = widget.selectedCategoryID;
+  }
+
+  @override
+  void dispose() {
+    _categoryController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _showAddCategoryDialog(BuildContext context) async {
+    _categoryController.clear();
+
+    return showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+          left: UIHelpers.lg,
+          right: UIHelpers.lg,
+          top: UIHelpers.lg,
+        ),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(UIHelpers.borderRadiusLg),
+            topRight: Radius.circular(UIHelpers.borderRadiusLg),
+          ),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'New Category',
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: UIHelpers.lg),
+            TextField(
+              controller: _categoryController,
+              autofocus: true,
+              decoration: InputDecoration(
+                hintText: 'Enter category name',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(UIHelpers.borderRadiusMd),
+                  borderSide: const BorderSide(color: AppColors.lightGrey),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(UIHelpers.borderRadiusMd),
+                  borderSide: const BorderSide(color: AppColors.lightGrey),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(UIHelpers.borderRadiusMd),
+                  borderSide: const BorderSide(color: AppColors.textBlack),
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: UIHelpers.md,
+                  vertical: UIHelpers.sm,
+                ),
+              ),
+            ),
+            const SizedBox(height: UIHelpers.lg),
+            SafeArea(
+              child: AppFilledButton(
+                text: 'Create Category',
+                onPressed: () {
+                  final categoryName = _categoryController.text.trim();
+                  if (categoryName.isEmpty) {
+                    SwiftAlert.display(
+                      context,
+                      message: 'Category name is required',
+                      type: NotificationType.warning,
+                    );
+                    return;
+                  }
+
+                  /// Check against existing category name
+                  final index = ref
+                      .read(categoryProvider)
+                      .indexWhere(
+                        (category) =>
+                            category.name.toLowerCase() ==
+                            categoryName.toLowerCase(),
+                      );
+
+                  if (index != -1) {
+                    SwiftAlert.display(
+                      context,
+                      message: 'Category already exists',
+                      type: NotificationType.warning,
+                    );
+                    return;
+                  }
+                  if (index == -1) {
+                    ref.read(categoryProvider.notifier).addCategory(categoryName);
+                    Navigator.pop(context);
+                    return;
+                  }
+                },
+              ),
+            ),
+            const Gap(UIHelpers.lg),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -41,9 +153,17 @@ class _CategorySelectionSheetState
     return Container(
       padding: const EdgeInsets.all(16),
       height: size.height * 0.6,
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(UIHelpers.borderRadiusLg),
+          topRight: Radius.circular(UIHelpers.borderRadiusLg),
+        ),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          const Gap(UIHelpers.xs),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -55,23 +175,49 @@ class _CategorySelectionSheetState
                 ),
                 textAlign: TextAlign.center,
               ),
-              Container(
-                height: 24,
-                width: 24,
-                decoration: const BoxDecoration(
-                  color: AppColors.lightGrey,
-                  shape: BoxShape.circle,
+              GestureDetector(
+                onTap: () => Navigator.pop(context),
+                child: Container(
+                  height: 24,
+                  width: 24,
+                  decoration: const BoxDecoration(
+                    color: AppColors.lightGrey,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.close_outlined, size: 16),
                 ),
-                child: const Icon(Icons.close_outlined, size: 16),
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const Gap(UIHelpers.md),
           Expanded(
-            child: ListView.builder(
-              itemCount: categories.length,
+            child: ListView.separated(
+              separatorBuilder: (context, index) =>
+                  const Divider(color: AppColors.lightGrey, thickness: .5),
+              itemCount: categories.length + 1,
               itemBuilder: (context, index) {
-                final category = categories[index];
+                if (index == 0) {
+                  return Padding(
+                    padding: const EdgeInsets.only(top: UIHelpers.md),
+                    child: ListTile(
+                      leading: const Icon(
+                        Icons.add_circle_outline,
+                        color: AppColors.textBlack,
+                      ),
+                      title: Text(
+                        'Add a new category',
+                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          color: AppColors.textBlack,
+                        ),
+                      ),
+                      trailing: const CheckButton(isChecked: false),
+                      onTap: () {
+                        _showAddCategoryDialog(context);
+                      },
+                    ),
+                  );
+                }
+                final category = categories[index - 1];
                 return ListTile(
                   onTap: () {
                     setState(() {
@@ -82,17 +228,21 @@ class _CategorySelectionSheetState
                   },
                   leading: Text(
                     category.name,
-                    style: theme.textTheme.bodyMedium?.copyWith(
+                    style: theme.textTheme.bodyLarge?.copyWith(
                       color: theme.colorScheme.onSurface,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
-                  trailing: Icon(
-                    _selectedCategoryID == category.name
-                        ? Icons.check_circle
-                        : Icons.circle_outlined,
-                    color: _selectedCategoryID == category.name
-                        ? theme.colorScheme.primary
-                        : theme.colorScheme.onSurface.withOpacity(0.5),
+                  trailing: CheckButton(
+                    isChecked: _selectedCategoryID == category.name,
+                    onTap: () {
+                      setState(() {
+                        _selectedCategoryID =
+                            _selectedCategoryID == category.name
+                            ? null
+                            : category.name;
+                      });
+                    },
                   ),
                 );
               },
@@ -102,32 +252,51 @@ class _CategorySelectionSheetState
           const SizedBox(height: 16),
           SafeArea(
             bottom: false,
-            child: SizedBox(
-              width: double.infinity,
-              child: FilledButton(
-                onPressed: () {
-                  final cat = categories.firstWhere(
-                    (e) => e.name == _selectedCategoryID,
-                  );
-                  widget.onSave(cat);
-                  Navigator.of(context).pop();
-                },
-                style: FilledButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  backgroundColor: AppColors.textBlack,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: const Text(
-                  'Save',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                ),
-              ),
+            child: AppFilledButton(
+              text: 'Save',
+              onPressed: () {
+                final cat = categories.firstWhere(
+                  (e) => e.name == _selectedCategoryID,
+                );
+                widget.onSave(cat);
+                Navigator.of(context).pop();
+              },
             ),
           ),
           const Gap(UIHelpers.lg),
         ],
+      ),
+    );
+  }
+}
+
+class CheckButton extends StatelessWidget {
+  final bool isChecked;
+  final VoidCallback? onTap;
+  const CheckButton({super.key, required this.isChecked, this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: UIHelpers.fastDuration,
+        height: 24,
+        width: 24,
+        decoration: BoxDecoration(
+          color: isChecked ? AppColors.textBlack : null,
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: isChecked ? AppColors.textBlack : AppColors.lightGrey,
+          ),
+        ),
+        child: Icon(
+          Icons.check_rounded,
+          size: 16,
+          color: isChecked
+              ? AppColors.white
+              : AppColors.textBlack.withValues(alpha: 0.5),
+        ),
       ),
     );
   }

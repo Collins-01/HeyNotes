@@ -4,9 +4,10 @@ import 'package:hey_notes/service_locator.dart';
 import 'package:hive/hive.dart';
 import '../models/category.dart';
 
-final categoryProvider = StateNotifierProvider<CategoryNotifier, List<Category>>(
-  (ref) => CategoryNotifier(sl<CategoryService>()),
-);
+final categoryProvider =
+    StateNotifierProvider<CategoryNotifier, List<Category>>(
+      (ref) => CategoryNotifier(sl<CategoryService>()),
+    );
 
 class CategoryNotifier extends StateNotifier<List<Category>> {
   final CategoryService _categoryService;
@@ -22,6 +23,7 @@ class CategoryNotifier extends StateNotifier<List<Category>> {
   Future<void> addCategory(String name) async {
     final newCategory = Category(name: name);
     await _categoryService.addCategory(newCategory);
+    //reload categories state to get updated value
     state = _categoryService.getAllCategories();
   }
 
@@ -32,12 +34,14 @@ class CategoryNotifier extends StateNotifier<List<Category>> {
       await _categoryService.deleteCategory(oldName);
       final updatedCategory = Category(name: newName);
       await _categoryService.addCategory(updatedCategory);
+      //reload categories state to get updated value
       state = _categoryService.getAllCategories();
     }
   }
 
   Future<void> deleteCategory(String name) async {
     await _categoryService.deleteCategory(name);
+    //reload categories state to get updated value
     state = _categoryService.getAllCategories();
   }
 

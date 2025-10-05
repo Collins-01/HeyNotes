@@ -8,7 +8,7 @@
         tools:ignore="ScopedStorage" />
     <uses-permission android:name="android.permission.INTERNET" />
     <application
-        android:label="hey_notes"
+        android:label="Hey Notes"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

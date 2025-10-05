@@ -16,26 +16,34 @@ class AppTheme {
         primary: AppColors.info,
         secondary: AppColors.mintGreen,
         surface: AppColors.white,
+        background: AppColors.white, // <-- ADD THIS!
         error: AppColors.error,
         onPrimary: AppColors.white,
         onSecondary: AppColors.darkGrey,
         onSurface: AppColors.textBlack,
+        onBackground: AppColors.textBlack, // <-- ADD THIS!
         onError: AppColors.white,
       ),
       scaffoldBackgroundColor: AppColors.white,
+
+      // CRITICAL: Disable Material 3 surface tinting globally
+      applyElevationOverlayColor: false, // <-- ADD THIS!
+
       appBarTheme: const AppBarTheme(
         elevation: 0,
-        centerTitle: true,
+        centerTitle: false,
         backgroundColor: AppColors.white,
         foregroundColor: AppColors.textBlack,
+        surfaceTintColor: Colors.transparent, // <-- THIS FIXES THE MILKY COLOR!
       ),
+
       cardTheme: CardThemeData(
         color: AppColors.white,
+        surfaceTintColor: Colors.transparent, // <-- THIS TOO!
         elevation: 2,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
+
       inputDecorationTheme: InputDecorationTheme(
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
@@ -47,65 +55,54 @@ class AppTheme {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: AppColors.info, width: 2),
+          borderSide: const BorderSide(color: AppColors.info, width: 1),
         ),
         filled: true,
         fillColor: AppColors.white,
       ),
+
+      // Additional widgets that might show tinting
+      dialogTheme: DialogThemeData(
+        backgroundColor: AppColors.white,
+        surfaceTintColor: Colors.transparent, // <-- For dialogs
+        elevation: 24,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      ),
+
+      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+        backgroundColor: AppColors.white,
+        elevation: 8,
+      ),
+
+      drawerTheme: const DrawerThemeData(
+        backgroundColor: AppColors.white,
+        surfaceTintColor: Colors.transparent, // <-- For drawers
+      ),
+
+      bottomSheetTheme: const BottomSheetThemeData(
+        backgroundColor: AppColors.white,
+        surfaceTintColor: Colors.transparent, // <-- For bottom sheets
+      ),
     );
   }
 
-  static ThemeData get darkTheme {
-    final darkTextTheme = AppTextStyles.textTheme.apply(
-      displayColor: Colors.white,
-      bodyColor: Colors.white,
-    );
-    
-    return ThemeData(
-      useMaterial3: true,
+  static ThemeData darkTheme = ThemeData(
+    iconTheme: const IconThemeData(size: 20),
+    useMaterial3: true,
+    brightness: Brightness.dark,
+    fontFamily: AppTextStyles.fontFamily,
+    textTheme: AppTextStyles.textTheme,
+    appBarTheme: const AppBarTheme(backgroundColor: AppColors.textBlack),
+    scaffoldBackgroundColor: AppColors.textBlack,
+    primaryColor: AppColors.info,
+    colorScheme: ColorScheme.fromSeed(
       brightness: Brightness.dark,
-      fontFamily: AppTextStyles.fontFamily,
-      textTheme: darkTextTheme,
-      colorScheme: ColorScheme.dark(
-        primary: AppColors.info,
-        secondary: AppColors.mintGreen.withOpacity(0.8),
-        surface: const Color(0xFF1E1E1E),
-        error: AppColors.error,
-        onPrimary: AppColors.white,
-        onSecondary: AppColors.white,
-        onSurface: AppColors.lightGrey,
-        onError: AppColors.white,
-      ),
-      scaffoldBackgroundColor: const Color(0xFF121212),
-      appBarTheme: const AppBarTheme(
-        elevation: 0,
-        centerTitle: true,
-        backgroundColor: Color(0xFF1E1E1E),
-        foregroundColor: AppColors.white,
-      ),
-      cardTheme: CardThemeData(
-        color: const Color(0xFF1E1E1E),
-        elevation: 2,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-      ),
-      inputDecorationTheme: InputDecorationTheme(
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: AppColors.darkGrey),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: AppColors.darkGrey),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: AppColors.info, width: 2),
-        ),
-        filled: true,
-        fillColor: const Color(0xFF1E1E1E),
-      ),
-    );
-  }
+      onPrimary: AppColors.white,
+      seedColor: AppColors.info,
+      primary: AppColors.white,
+      onSecondary: AppColors.white,
+      error: AppColors.error,
+      secondary: AppColors.mintGreen,
+    ),
+  );
 }

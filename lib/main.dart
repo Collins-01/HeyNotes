@@ -2,19 +2,16 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:hey_notes/core/services/pdf_service.dart';
+import 'package:hey_notes/app.dart';
 import 'package:hey_notes/core/services/services.dart';
+import 'package:hey_notes/models/category.dart';
+import 'package:hey_notes/models/note.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'screens/splash/splash_screen.dart';
-import 'models/note.dart';
-import 'models/category.dart';
 import 'service_locator.dart';
 
 Future<void> main() async {
   // Ensure Flutter is initialized
   WidgetsFlutterBinding.ensureInitialized();
-  // Initialize PDF fonts
-  // await PdfExportService.initializeFonts();
 
   /// setup locator
   setupLocator();
@@ -40,19 +37,7 @@ Future<void> main() async {
     await sl.get<CategoryService>().init();
 
     // Run the app with providers
-    runApp(
-      ProviderScope(
-        child: MaterialApp(
-          title: 'HeyNotes',
-          debugShowCheckedModeBanner: false,
-          theme: ThemeData(
-            primarySwatch: Colors.blue,
-            visualDensity: VisualDensity.adaptivePlatformDensity,
-          ),
-          home: const SplashScreen(),
-        ),
-      ),
-    );
+    runApp(const ProviderScope(child: App()));
   } catch (e, stackTrace) {
     log('Error initializing app: $e');
     log('Stack trace: $stackTrace');

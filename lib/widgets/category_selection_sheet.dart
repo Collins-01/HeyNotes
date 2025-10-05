@@ -4,6 +4,7 @@ import 'package:gap/gap.dart';
 import 'package:hey_notes/core/theme/app_colors.dart';
 import 'package:hey_notes/core/utils/constants.dart';
 import 'package:hey_notes/core/utils/ui_helpers.dart';
+import 'package:hey_notes/extension/extension.dart';
 import 'package:hey_notes/models/category.dart';
 import 'package:hey_notes/providers/category_provider.dart';
 import 'package:hey_notes/widgets/buttons/filled_button.dart';
@@ -158,7 +159,7 @@ class _CategorySelectionSheetState
       padding: const EdgeInsets.all(16),
       height: size.height * 0.6,
       decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
+        color: context.isDarkMode ? AppColors.textBlack : AppColors.white,
         borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(UIHelpers.borderRadiusLg),
           topRight: Radius.circular(UIHelpers.borderRadiusLg),
@@ -184,11 +185,19 @@ class _CategorySelectionSheetState
                 child: Container(
                   height: 24,
                   width: 24,
-                  decoration: const BoxDecoration(
-                    color: AppColors.lightGrey,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.grey[800]
+                        : AppColors.lightGrey,
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.close_outlined, size: 16),
+                  child: Icon(
+                    Icons.close_outlined,
+                    size: 16,
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.white70
+                        : null,
+                  ),
                 ),
               ),
             ],
@@ -204,14 +213,18 @@ class _CategorySelectionSheetState
                   return Padding(
                     padding: const EdgeInsets.only(top: UIHelpers.md),
                     child: ListTile(
-                      leading: const Icon(
+                      leading: Icon(
                         Icons.add_circle_outline,
-                        color: AppColors.textBlack,
+                        color: context.isDarkMode
+                            ? AppColors.white
+                            : AppColors.textBlack,
                       ),
                       title: Text(
                         'Add a new category',
                         style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color: AppColors.textBlack,
+                          color: context.isDarkMode
+                              ? AppColors.white
+                              : AppColors.textBlack,
                         ),
                       ),
                       trailing: const CheckButton(isChecked: false),
@@ -301,6 +314,10 @@ class CheckButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final checkColor = isDarkMode ? AppColors.white : AppColors.textBlack;
+    final borderColor = isDarkMode ? AppColors.darkGrey : AppColors.lightGrey;
+
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
@@ -308,18 +325,22 @@ class CheckButton extends StatelessWidget {
         height: 24,
         width: 24,
         decoration: BoxDecoration(
-          color: isChecked ? AppColors.textBlack : null,
+          color: isChecked
+              ? (isDarkMode ? AppColors.white : AppColors.textBlack)
+              : null,
           shape: BoxShape.circle,
           border: Border.all(
-            color: isChecked ? AppColors.textBlack : AppColors.lightGrey,
+            color: isChecked
+                ? (isDarkMode ? AppColors.white : AppColors.textBlack)
+                : borderColor,
           ),
         ),
         child: Icon(
           Icons.check_rounded,
           size: 16,
           color: isChecked
-              ? AppColors.white
-              : AppColors.textBlack.withValues(alpha: 0.5),
+              ? (isDarkMode ? AppColors.textBlack : AppColors.white)
+              : checkColor.withValues(alpha: 0.5),
         ),
       ),
     );

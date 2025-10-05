@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:hey_notes/core/utils/ui_helpers.dart';
 import 'package:hey_notes/screens/home/homepage/home_screen.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -42,7 +43,7 @@ class _SplashScreenState extends State<SplashScreen>
     // Navigate to home screen after animation completes
     Future.delayed(const Duration(seconds: 2), () {
       if (mounted) {
-        Navigator.of(context).pushReplacement(
+        Navigator.of(context).pushAndRemoveUntil(
           PageRouteBuilder(
             pageBuilder: (context, animation, secondaryAnimation) =>
                 const HomeScreen(),
@@ -61,8 +62,9 @@ class _SplashScreenState extends State<SplashScreen>
                     child: child,
                   );
                 },
-            transitionDuration: const Duration(milliseconds: 800),
+            transitionDuration: UIHelpers.slowDuration,
           ),
+          (Route<dynamic> route) => false,
         );
       }
     });
@@ -77,7 +79,6 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

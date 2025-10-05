@@ -12,6 +12,12 @@
     <img src="screenshots/IMG_5672.PNG" alt="Home Screen" width="200"/>
     <img src="screenshots/IMG_5673.PNG" alt="Note Editor" width="200"/>
     <img src="screenshots/IMG_5674.PNG" alt="Rich Text Formatting" width="200"/>
+    <img src="screenshots/Screenshot_1759688583.png" alt="App Screenshot 1" width="200"/>
+    <img src="screenshots/Screenshot_1759688589.png" alt="App Screenshot 2" width="200"/>
+    <img src="screenshots/Screenshot_1759688598.png" alt="App Screenshot 3" width="200"/>
+    <img src="screenshots/Screenshot_1759688603.png" alt="App Screenshot 4" width="200"/>
+    <img src="screenshots/Screenshot_1759688611.png" alt="App Screenshot 5" width="200"/>
+    <img src="screenshots/Screenshot_1759688618.png" alt="App Screenshot 6" width="200"/>
   </div>
 </div>
 

@@ -10,6 +10,7 @@ import 'package:hey_notes/extension/extension.dart';
 import 'package:hey_notes/models/note.dart';
 import 'package:hey_notes/models/option.dart';
 import 'package:hey_notes/providers/note_provider.dart';
+import 'package:hey_notes/screens/home/homepage/homepage_viewmodel.dart';
 import 'package:hey_notes/screens/notes_page/create_edit_notes.dart/create_edit_note_state.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
@@ -180,6 +181,7 @@ class CreateEditNotesViewmodel extends StateNotifier<CreateEditNoteState> {
           message: 'Note updated successfully',
           type: NotificationType.success,
         );
+        ref.read(homepageViewModelProvider.notifier).onInit();
         callback?.call();
         return;
       }
@@ -204,6 +206,7 @@ class CreateEditNotesViewmodel extends StateNotifier<CreateEditNoteState> {
         message: 'Note saved successfully',
         type: NotificationType.success,
       );
+      ref.read(homepageViewModelProvider.notifier).onInit();
       callback?.call();
     } catch (e) {
       AppLogger.e(e.toString());

@@ -52,6 +52,7 @@ class ShareOptionsBottomSheet extends StatelessWidget {
 }
 
 class CreateEditNoteScreen extends ConsumerStatefulWidget {
+  static const String routeName = '/create_edit_note';
   final Note? note;
 
   const CreateEditNoteScreen({super.key, this.note});
@@ -107,19 +108,18 @@ class _NoteViewScreenState extends ConsumerState<CreateEditNoteScreen> {
     final state = ref.watch(createEditNotesViewModel);
     return Scaffold(
       resizeToAvoidBottomInset: true,
-      backgroundColor: context.isDarkMode ? AppColors.black : AppColors.white,
       appBar: AppBar(
-        backgroundColor: context.isDarkMode ? AppColors.black : AppColors.white,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
         actions: [
           IconButton(
-            icon: const ShowSVG(
+            icon: ShowSVG(
               svgPath: IconAssets.save,
               height: 20,
               width: 20,
+              color: context.isDarkMode ? AppColors.white : AppColors.black,
             ),
             onPressed: () {
               FocusScope.of(context).unfocus();
@@ -151,16 +151,6 @@ class _NoteViewScreenState extends ConsumerState<CreateEditNoteScreen> {
                       controller: _controller,
                       callback: () {
                         Navigator.pop(context);
-                        // Get the HomeScreen's viewmodel and refresh notes
-                        final homeVm = ref.read(
-                          homepageViewModelProvider.notifier,
-                        );
-                        // homeVm.onInit();
-                        Navigator.of(context).pushReplacement(
-                          MaterialPageRoute(
-                            builder: (context) => const HomeScreen(),
-                          ),
-                        );
                       },
                     );
                   },
@@ -174,7 +164,11 @@ class _NoteViewScreenState extends ConsumerState<CreateEditNoteScreen> {
               svgPath: state.isPinned
                   ? IconAssets.pushPinFilled
                   : IconAssets.pushPin,
-              color: state.isPinned ? AppColors.info : AppColors.textBlack,
+              color: state.isPinned
+                  ? AppColors.info
+                  : (context.isDarkMode
+                        ? AppColors.white
+                        : AppColors.textBlack),
               height: 20,
               width: 20,
             ),
@@ -186,10 +180,11 @@ class _NoteViewScreenState extends ConsumerState<CreateEditNoteScreen> {
           Visibility(
             visible: widget.note != null,
             child: PopupMenuButton<ShareOption>(
-              icon: const ShowSVG(
+              icon: ShowSVG(
                 svgPath: IconAssets.upload,
                 height: 20,
                 width: 20,
+                color: context.isDarkMode ? AppColors.white : AppColors.black,
               ),
               tooltip: 'Share',
               onSelected: (option) async {
@@ -304,7 +299,9 @@ class _NoteViewScreenState extends ConsumerState<CreateEditNoteScreen> {
                 margin: const EdgeInsets.only(bottom: 16),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(UIHelpers.borderRadiusLg),
-                  color: AppColors.textBlack,
+                  color: context.isDarkMode
+                      ? Colors.grey[800]
+                      : AppColors.textBlack,
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withOpacity(0.1),
@@ -328,7 +325,9 @@ class _NoteViewScreenState extends ConsumerState<CreateEditNoteScreen> {
                           width: 20,
                           color: _hasFormatting()
                               ? AppColors.info
-                              : Theme.of(context).scaffoldBackgroundColor,
+                              : Theme.of(
+                                  context,
+                                ).colorScheme.onSurface.withOpacity(0.7),
                         ),
                         onPressed: _clearAllFormatting,
                         isToggled: _hasFormatting(),
@@ -397,7 +396,9 @@ class _NoteViewScreenState extends ConsumerState<CreateEditNoteScreen> {
       child: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: isToggled ? Colors.blue.withOpacity(0.2) : Colors.transparent,
+          color: isToggled
+              ? Colors.blue.withValues(alpha: 0.2)
+              : Colors.transparent,
           borderRadius: BorderRadius.circular(4),
           border: Border.all(
             color: isToggled ? Colors.blue : Colors.transparent,
@@ -486,7 +487,7 @@ class _NoteViewScreenState extends ConsumerState<CreateEditNoteScreen> {
 
   // Clear all formatting
   void _clearAllFormatting() {
-    final selection = _controller.selection;
+    // final selection = _controller.selection;
     final currentStyle = _controller.getSelectionStyle();
 
     // List of all attributes to clear

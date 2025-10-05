@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hey_notes/core/theme/app_colors.dart';
 import 'package:hey_notes/core/utils/ui_helpers.dart';
+import 'package:hey_notes/extension/context_extension.dart';
 
 class AppFilledButton extends StatelessWidget {
   final String text;
@@ -36,9 +37,13 @@ class AppFilledButton extends StatelessWidget {
       onPressed: isLoading ? null : onPressed,
       style: FilledButton.styleFrom(
         padding: padding ?? const EdgeInsets.symmetric(vertical: 16),
-        backgroundColor: backgroundColor ?? AppColors.textBlack,
+        backgroundColor:
+            backgroundColor ??
+            (context.isDarkMode ? Colors.grey[800] : AppColors.textBlack),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(borderRadius ?? UIHelpers.borderRadiusMd),
+          borderRadius: BorderRadius.circular(
+            borderRadius ?? UIHelpers.borderRadiusMd,
+          ),
         ),
         minimumSize: isFullWidth ? const Size(double.infinity, 0) : null,
       ),
@@ -54,7 +59,10 @@ class AppFilledButton extends StatelessWidget {
           : Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                if (prefixIcon != null) ...[prefixIcon!, const SizedBox(width: 8)],
+                if (prefixIcon != null) ...[
+                  prefixIcon!,
+                  const SizedBox(width: 8),
+                ],
                 Text(
                   text,
                   style: TextStyle(
@@ -67,6 +75,8 @@ class AppFilledButton extends StatelessWidget {
             ),
     );
 
-    return isFullWidth ? SizedBox(width: double.infinity, child: button) : button;
+    return isFullWidth
+        ? SizedBox(width: double.infinity, child: button)
+        : button;
   }
 }

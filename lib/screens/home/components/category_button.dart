@@ -1,8 +1,7 @@
-
 import 'package:flutter/material.dart';
-import 'package:hey_notes/core/theme/app_colors.dart';
 import 'package:hey_notes/core/utils/dialogs.dart';
 import 'package:hey_notes/core/utils/ui_helpers.dart';
+import 'package:hey_notes/extension/string_extension.dart';
 import 'package:hey_notes/models/category.dart';
 
 class CategoryButton extends StatelessWidget {
@@ -46,12 +45,14 @@ class CategoryButton extends StatelessWidget {
           curve: Curves.linear,
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: isSelected ? AppColors.black : AppColors.white,
+            color: isSelected
+                ? Theme.of(context).colorScheme.onSurface
+                : Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: !isSelected
-                  ? AppColors.black.withValues(alpha: .2)
-                  : AppColors.black,
+                  ? Theme.of(context).colorScheme.onSurface.withOpacity(0.2)
+                  : Theme.of(context).colorScheme.onSurface,
             ),
           ),
           padding: const EdgeInsets.only(
@@ -61,9 +62,11 @@ class CategoryButton extends StatelessWidget {
             bottom: UIHelpers.xs,
           ),
           child: Text(
-            category.name,
+            category.name.capitalizeFirstLetter,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: isSelected ? AppColors.white : AppColors.black,
+              color: isSelected
+                  ? Theme.of(context).colorScheme.surface
+                  : Theme.of(context).colorScheme.onSurface,
             ),
           ),
         ),

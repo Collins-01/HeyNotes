@@ -27,6 +27,7 @@ class NotesService {
     }
   }
 
+  /// call if need be to seed database.
   Future<void> _addSampleNotes() async {
     try {
       AppLogger.i('Adding sample notes');

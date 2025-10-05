@@ -21,11 +21,7 @@ class CategoryService {
 
       // Add default categories if the box is empty
       if (_categoriesBox.isEmpty) {
-        AppLogger.d('Box is empty, adding default categories');
-      } else {
-        // this will only show when we have at least one category
         _addAllCategory();
-        AppLogger.d('Found ${_categoriesBox.length} existing categories');
       }
     } catch (e, stackTrace) {
       AppLogger.e('Error initializing CategoryService', e, stackTrace);
@@ -70,8 +66,10 @@ class CategoryService {
       final categories = _categoriesBox.values.toList();
       // sort in a way that `all` starts first. regardless if whether another category starts with `a` or `A`
       categories.sort((a, b) {
-        if (a.name.toLowerCase() == Constants.defaultCategory.toLowerCase()) return -1;
-        if (b.name.toLowerCase() == Constants.defaultCategory.toLowerCase()) return 1;
+        if (a.name.toLowerCase() == Constants.defaultCategory.toLowerCase())
+          return -1;
+        if (b.name.toLowerCase() == Constants.defaultCategory.toLowerCase())
+          return 1;
         return a.name.compareTo(b.name);
       });
 

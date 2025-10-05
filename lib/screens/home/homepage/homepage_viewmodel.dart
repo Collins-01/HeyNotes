@@ -85,13 +85,15 @@ class HomepageViewmodel extends StateNotifier<HomepageState> {
           note.createdAt.day == selectedDate.day;
     }).toList();
 
-    // Apply category filter if not 'all'
-    if (state.selectedCategoryID?.toLowerCase() !=
-        Constants.defaultCategory.toLowerCase()) {
-      final categoryId = state.selectedCategoryID?.toLowerCase();
-      filteredNotes = filteredNotes
-          .where((note) => note.categoryId?.toLowerCase() == categoryId)
-          .toList();
+    // Apply category filter if a specific category is selected (not 'all' and not null)
+    if (state.selectedCategoryID != null && 
+        state.selectedCategoryID!.toLowerCase() != Constants.defaultCategory.toLowerCase()) {
+      final categoryId = state.selectedCategoryID!.toLowerCase();
+      filteredNotes = filteredNotes.where((note) {
+        // Include notes that match the selected category ID (case-insensitive)
+        // or notes with no category if the selected category is the default one
+        return note.categoryId?.toLowerCase() == categoryId;
+      }).toList();
     }
 
     // Update state with filtered notes

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hey_notes/core/utils/logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 enum AppThemeMode { system, light, dark }
@@ -14,18 +15,22 @@ class ThemeModeNotifier extends StateNotifier<ThemeMode> {
   Future<void> _loadThemeMode() async {
     final prefs = await SharedPreferences.getInstance();
     final themeModeString = prefs.getString(_key);
+    AppLogger.d("Theme mode loaded from prefs: $themeModeString");
 
     if (themeModeString != null) {
       state = _stringToThemeMode(themeModeString);
+      AppLogger.d("Theme mode set to: $state");
     }
   }
 
   Future<void> setThemeMode(AppThemeMode mode) async {
     final themeMode = _appThemeModeToThemeMode(mode);
     state = themeMode;
+    AppLogger.d("Theme mode set to: $themeMode");
 
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_key, _themeModeToString(themeMode));
+    AppLogger.d("Theme mode saved to prefs: ${prefs.getString(_key)}");
   }
 
   ThemeMode _appThemeModeToThemeMode(AppThemeMode mode) {

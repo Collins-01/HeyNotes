@@ -99,9 +99,7 @@ class _AppearancePageState extends ConsumerState<AppearancePage> {
     final currentThemeMode = themeModeNotifier.getCurrentAppThemeMode();
 
     return Scaffold(
-      backgroundColor: context.isDarkMode ? AppColors.black : AppColors.white,
       appBar: AppBar(
-        backgroundColor: context.isDarkMode ? AppColors.black : AppColors.white,
         title: SlideInLeft(
           child: Text(
             'Appearance',

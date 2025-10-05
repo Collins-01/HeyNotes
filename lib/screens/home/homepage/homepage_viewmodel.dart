@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hey_notes/core/utils/constants.dart';
+import 'package:hey_notes/core/utils/logger.dart';
 import 'package:hey_notes/enums/note_sort.dart';
 import 'package:hey_notes/models/note.dart';
 import 'package:hey_notes/providers/category_provider.dart';
@@ -29,6 +30,7 @@ class HomepageViewmodel extends StateNotifier<HomepageState> {
 
   void loadNotes() {
     ref.read(noteProvider.notifier).getAllNotes();
+    AppLogger.d('Notes loaded: ${ref.read(noteProvider).length}');
     state = state.copyWith(notes: ref.read(noteProvider));
   }
 

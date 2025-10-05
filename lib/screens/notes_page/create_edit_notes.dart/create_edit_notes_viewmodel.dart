@@ -181,7 +181,7 @@ class CreateEditNotesViewmodel extends StateNotifier<CreateEditNoteState> {
           message: 'Note updated successfully',
           type: NotificationType.success,
         );
-        ref.read(homepageViewModelProvider.notifier).onInit();
+        ref.read(homepageViewModelProvider.notifier).loadNotes();
         callback?.call();
         return;
       }
@@ -206,7 +206,7 @@ class CreateEditNotesViewmodel extends StateNotifier<CreateEditNoteState> {
         message: 'Note saved successfully',
         type: NotificationType.success,
       );
-      ref.read(homepageViewModelProvider.notifier).onInit();
+      ref.read(homepageViewModelProvider.notifier).loadNotes();
       callback?.call();
     } catch (e) {
       AppLogger.e(e.toString());

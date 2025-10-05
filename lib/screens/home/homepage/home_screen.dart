@@ -395,6 +395,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       },
                     ),
             ),
+            const Gap(UIHelpers.lg),
           ],
         ),
         floatingActionButton: FloatingActionButton(

@@ -244,7 +244,7 @@ class _CategorySelectionSheetState
                     });
                   },
                   leading: Text(
-                    category.name,
+                    category.name.capitalizeFirstLetter,
                     style: theme.textTheme.bodyLarge?.copyWith(
                       color: theme.colorScheme.onSurface,
                       fontWeight: FontWeight.w500,

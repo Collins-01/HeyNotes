@@ -5,8 +5,9 @@
 
   A beautiful and intuitive note-taking app built with Flutter. Organize your thoughts, ideas, and tasks with rich text editing and powerful organization features.
   
-  [![Flutter](https://img.shields.io/badge/Flutter-02569B?style=for-the-badge&logo=flutter&logoColor=white)](https://flutter.dev/)
+  [![Flutter](https://img.shields.io/badge/Flutter-3.32.5-02569B?style=for-the-badge&logo=flutter&logoColor=white)](https://flutter.dev/)
   [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
+  [![Dart](https://img.shields.io/badge/Dart-3.8.1-0175C2?style=for-the-badge&logo=dart&logoColor=white)](https://dart.dev/)
   
   <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin: 20px 0;">
     <img src="screenshots/IMG_5672.PNG" alt="Home Screen" width="200"/>

@@ -21,7 +21,7 @@ class App extends ConsumerWidget {
       darkTheme: AppTheme.darkTheme,
       themeMode: themeMode,
       themeAnimationDuration: UIHelpers.mediumDuration,
-      themeAnimationCurve: Curves.linear,
+      themeAnimationCurve: Curves.easeInOutCubic,
       navigatorKey: NavigationService.navigatorKey,
       onGenerateRoute: AppRouter.generateRoute,
       initialRoute: HomeScreen.routeName,

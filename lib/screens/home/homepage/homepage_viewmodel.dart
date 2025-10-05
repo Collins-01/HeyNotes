@@ -64,8 +64,9 @@ class HomepageViewmodel extends StateNotifier<HomepageState> {
 
   /// Applies all active filters to the notes list
   void applyFilters() {
+    // Always get fresh notes from the provider
     final allNotes = ref.read(noteProvider);
-
+    
     // Start with all notes and apply filters in sequence
     var filteredNotes = List<Note>.from(allNotes);
 
@@ -87,13 +88,13 @@ class HomepageViewmodel extends StateNotifier<HomepageState> {
           note.createdAt.day == selectedDate.day;
     }).toList();
 
-    // Apply category filter if a specific category is selected (not 'all' and not null)
-    if (state.selectedCategoryID != null && 
-        state.selectedCategoryID!.toLowerCase() != Constants.defaultCategory.toLowerCase()) {
-      final categoryId = state.selectedCategoryID!.toLowerCase();
+    // Apply category filter only if a specific category is selected (not 'all' and not null)
+    final selectedCategoryID = state.selectedCategoryID;
+    if (selectedCategoryID != null && 
+        selectedCategoryID.toLowerCase() != Constants.defaultCategory.toLowerCase()) {
+      final categoryId = selectedCategoryID.toLowerCase();
       filteredNotes = filteredNotes.where((note) {
         // Include notes that match the selected category ID (case-insensitive)
-        // or notes with no category if the selected category is the default one
         return note.categoryId?.toLowerCase() == categoryId;
       }).toList();
     }

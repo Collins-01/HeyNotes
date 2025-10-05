@@ -147,13 +147,13 @@ class CreateEditNotesViewmodel extends StateNotifier<CreateEditNoteState> {
     await PdfExportService.sharePdf(pdfFile);
   }
 
-  void saveNote(
+  Future<void> saveNote(
     BuildContext context, {
     required QuillController controller,
     VoidCallback? callback,
     required String title,
     required bool isEdit,
-  }) {
+  }) async {
     try {
       // Convert Quill content to string
 
@@ -161,7 +161,7 @@ class CreateEditNotesViewmodel extends StateNotifier<CreateEditNoteState> {
 
       if (isEdit) {
         AppLogger.d('Editing note: ${state.note!.id}');
-        ref
+        await ref
             .read(noteProvider.notifier)
             .updateNote(
               Note(
@@ -176,12 +176,16 @@ class CreateEditNotesViewmodel extends StateNotifier<CreateEditNoteState> {
                 color: state.note!.color,
               ),
             );
+            
+        // Explicitly refresh the homepage view model's state
+        final homepageVm = ref.read(homepageViewModelProvider.notifier);
+        homepageVm.resetFilters();
+        
         SwiftAlert.display(
           context,
           message: 'Note updated successfully',
           type: NotificationType.success,
         );
-        ref.read(homepageViewModelProvider.notifier).loadNotes();
         callback?.call();
         return;
       }
@@ -200,13 +204,16 @@ class CreateEditNotesViewmodel extends StateNotifier<CreateEditNoteState> {
       );
       AppLogger.d('New note added: ${note.id}');
 
-      ref.read(noteProvider.notifier).addNote(note);
+      await ref.read(noteProvider.notifier).addNote(note);
+      // Explicitly refresh the homepage view model's state
+      final homepageVm = ref.read(homepageViewModelProvider.notifier);
+      homepageVm.resetFilters();
+      
       SwiftAlert.display(
         context,
         message: 'Note saved successfully',
         type: NotificationType.success,
       );
-      ref.read(homepageViewModelProvider.notifier).loadNotes();
       callback?.call();
     } catch (e) {
       AppLogger.e(e.toString());

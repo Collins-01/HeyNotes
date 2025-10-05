@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hey_notes/core/theme/app_colors.dart';
 import 'package:hey_notes/core/utils/ui_helpers.dart';
+import 'package:hey_notes/extension/extension.dart';
 import 'package:hey_notes/providers/theme_provider.dart';
 
 class ThemeOption extends ConsumerWidget {
@@ -98,9 +99,9 @@ class _AppearancePageState extends ConsumerState<AppearancePage> {
     final currentThemeMode = themeModeNotifier.getCurrentAppThemeMode();
 
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: context.isDarkMode ? AppColors.black : AppColors.white,
       appBar: AppBar(
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        backgroundColor: context.isDarkMode ? AppColors.black : AppColors.white,
         title: SlideInLeft(
           child: Text(
             'Appearance',

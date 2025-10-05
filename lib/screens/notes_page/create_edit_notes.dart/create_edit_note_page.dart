@@ -155,7 +155,7 @@ class _NoteViewScreenState extends ConsumerState<CreateEditNoteScreen> {
                         final homeVm = ref.read(
                           homepageViewModelProvider.notifier,
                         );
-                        homeVm.onInit();
+                        // homeVm.onInit();
                         Navigator.of(context).pushReplacement(
                           MaterialPageRoute(
                             builder: (context) => const HomeScreen(),

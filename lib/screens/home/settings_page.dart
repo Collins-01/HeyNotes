@@ -2,9 +2,12 @@ import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:hey_notes/core/theme/app_colors.dart';
+import 'package:hey_notes/core/utils/icon_assets.dart';
 import 'package:hey_notes/core/utils/ui_helpers.dart';
+import 'package:hey_notes/extension/extension.dart';
 import 'package:hey_notes/screens/home/appearance_page.dart';
 import 'package:hey_notes/widgets/custom_image.dart';
+import 'package:hey_notes/widgets/show_svg.dart';
 
 class SettingsPage extends StatefulWidget {
   static const String routeName = '/settings';
@@ -18,9 +21,9 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: context.isDarkMode ? AppColors.black : AppColors.white,
       appBar: AppBar(
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        backgroundColor: context.isDarkMode ? AppColors.black : AppColors.white,
         title: SlideInLeft(
           child: Text(
             'Settings',
@@ -68,7 +71,8 @@ class _SettingsPageState extends State<SettingsPage> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(vertical: UIHelpers.sm),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).scaffoldBackgroundColor,
+                    // color: context.isDarkMode ? AppColors.black : AppColors.white,
+                    color: Colors.transparent,
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Row(
@@ -77,11 +81,17 @@ class _SettingsPageState extends State<SettingsPage> {
                       Row(
                         children: [
                           Container(
-                            height: UIHelpers.lg,
-                            width: UIHelpers.lg,
+                            height: UIHelpers.xl,
+                            width: UIHelpers.xl,
                             decoration: BoxDecoration(
                               color: AppColors.black,
                               borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: const ShowSVG(
+                              svgPath: IconAssets.sun,
+                              height: 16,
+                              width: 16,
+                              color: AppColors.white,
                             ),
                           ),
                           const Gap(UIHelpers.md),

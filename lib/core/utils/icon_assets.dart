@@ -18,4 +18,5 @@ class IconAssets {
 
   // Settings
   static const String settings = 'assets/icons/gear.svg';
+  static const String sun = 'assets/icons/sun-dim.svg';
 }

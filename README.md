@@ -102,6 +102,9 @@ flutter run
   <img src="screenshots/IMG_5675.PNG" alt="Category Selection" style="border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
   <img src="screenshots/IMG_5676.PNG" alt="Dark Theme" style="border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
   <img src="screenshots/IMG_5678.PNG" alt="Note Options" style="border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+  <img src="screenshots/IMG_5683.PNG" alt="Theme Selection" style="border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+  <img src="screenshots/IMG_5684.PNG" alt="Settings Page" style="border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+  <img src="screenshots/IMG_5685.PNG" alt="Appearance Settings" style="border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
 </div>
 
 ## 🛡️ Permissions

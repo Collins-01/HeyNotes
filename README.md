@@ -35,6 +35,12 @@
 - 📱 **Responsive Design** - Works on phones and tablets of all sizes
 - 🔒 **Local Storage** - Your data stays on your device with Hive database
 
+## 📥 Download
+
+Get the latest APK from the [Releases](https://github.com/Collins-01/HeyNotes/releases/latest) page.
+
+[![Latest Release](https://img.shields.io/github/v/release/Collins-01/HeyNotes?style=for-the-badge&label=Download%20Latest&logo=github)](https://github.com/Collins-01/HeyNotes/releases/latest)
+
 ## 🚀 Getting Started
 
 ### Prerequisites
@@ -43,7 +49,12 @@
 - Android Studio / Xcode (for running on emulator/device)
 - VS Code or Android Studio (recommended for development)
 
-### Installation
+### For Users
+1. Download the latest APK from the [Releases](https://github.com/Collins-01/HeyNotes/releases/latest) page
+2. Install the APK on your Android device
+3. Open the app and start taking notes!
+
+### For Developers
 
 1. Clone the repository:
    ```bash
@@ -54,6 +65,11 @@
 2. Install dependencies:
    ```bash
    flutter pub get
+   ```
+
+3. Run the app:
+   ```bash
+   flutter run
    ```
 
 3. Run the app:

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:hey_notes/core/theme/app_colors.dart';
+import 'package:hey_notes/core/utils/constants.dart';
 import 'package:hey_notes/core/utils/ui_helpers.dart';
 import 'package:hey_notes/models/category.dart';
 import 'package:hey_notes/providers/category_provider.dart';
@@ -27,14 +28,15 @@ class CategorySelectionSheet extends ConsumerStatefulWidget {
 
 class _CategorySelectionSheetState
     extends ConsumerState<CategorySelectionSheet> {
-  late String? _selectedCategoryID;
+  String? _selectedCategoryID;
 
   final TextEditingController _categoryController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    _selectedCategoryID = widget.selectedCategoryID;
+    _selectedCategoryID =
+        widget.selectedCategoryID ?? Constants.defaultCategory;
   }
 
   @override
@@ -131,7 +133,9 @@ class _CategorySelectionSheetState
                     return;
                   }
                   if (index == -1) {
-                    ref.read(categoryProvider.notifier).addCategory(categoryName);
+                    ref
+                        .read(categoryProvider.notifier)
+                        .addCategory(categoryName);
                     Navigator.pop(context);
                     return;
                   }
@@ -258,7 +262,7 @@ class _CategorySelectionSheetState
                 try {
                   // If no category is selected, use 'All' as default
                   if (_selectedCategoryID == null) {
-                    widget.onSave(Category(name: 'All'));
+                    widget.onSave(Category(name: Constants.defaultCategory));
                     Navigator.of(context).pop();
                     return;
                   }
@@ -266,15 +270,17 @@ class _CategorySelectionSheetState
                   // Try to find the selected category
                   final category = categories.firstWhere(
                     (e) => e.name == _selectedCategoryID,
-                    orElse: () => Category(name: 'All'), // Default to 'All' if not found
+                    orElse: () => Category(
+                      name: Constants.defaultCategory,
+                    ), // Default to 'All' if not found
                   );
-                  
+
                   widget.onSave(category);
                   Navigator.of(context).pop();
                 } catch (e) {
                   // Fallback to 'All' category in case of any error
                   if (mounted) {
-                    widget.onSave(Category(name: 'All'));
+                    widget.onSave(Category(name: Constants.defaultCategory));
                     Navigator.of(context).pop();
                   }
                 }

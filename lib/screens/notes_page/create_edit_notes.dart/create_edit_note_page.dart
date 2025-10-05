@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:hey_notes/core/theme/app_colors.dart' show AppColors;
+import 'package:hey_notes/core/utils/constants.dart';
 import 'package:hey_notes/core/utils/icon_assets.dart';
 import 'package:hey_notes/core/utils/ui_helpers.dart';
+import 'package:hey_notes/extension/context_extension.dart';
 import 'package:hey_notes/models/note.dart';
 import 'package:hey_notes/screens/home/homepage/home_screen.dart';
 import 'package:hey_notes/screens/home/homepage/homepage_viewmodel.dart';
@@ -69,6 +71,11 @@ class _NoteViewScreenState extends ConsumerState<CreateEditNoteScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        ref.read(createEditNotesViewModel.notifier).onInt(widget.note);
+      }
+    });
 
     // Initialize the controller with the note content if it exists
     if (widget.note?.content.isNotEmpty ?? true) {
@@ -92,12 +99,6 @@ class _NoteViewScreenState extends ConsumerState<CreateEditNoteScreen> {
         });
       }
     });
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        ref.read(createEditNotesViewModel.notifier).onInt(widget.note);
-      }
-    });
   }
 
   @override
@@ -106,9 +107,9 @@ class _NoteViewScreenState extends ConsumerState<CreateEditNoteScreen> {
     final state = ref.watch(createEditNotesViewModel);
     return Scaffold(
       resizeToAvoidBottomInset: true,
-      backgroundColor: Theme.of(context).colorScheme.surface,
+      backgroundColor: context.isDarkMode ? AppColors.black : AppColors.white,
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.surface,
+        backgroundColor: context.isDarkMode ? AppColors.black : AppColors.white,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
@@ -140,9 +141,12 @@ class _NoteViewScreenState extends ConsumerState<CreateEditNoteScreen> {
                 builder: (context) => CategorySelectionSheet(
                   selectedCategoryID: state.note?.categoryId,
                   onSave: (category) {
-                    vm.setCategoryID(category?.name ?? 'All');
+                    vm.setCategoryID(
+                      category?.name ?? Constants.defaultCategory,
+                    );
                     vm.saveNote(
                       context,
+                      isEdit: widget.note != null,
                       title: _titleController?.text.trim() ?? '',
                       controller: _controller,
                       callback: () {
@@ -151,7 +155,7 @@ class _NoteViewScreenState extends ConsumerState<CreateEditNoteScreen> {
                         final homeVm = ref.read(
                           homepageViewModelProvider.notifier,
                         );
-                        homeVm.loadNotes();
+                        homeVm.onInit();
                         Navigator.of(context).pushReplacement(
                           MaterialPageRoute(
                             builder: (context) => const HomeScreen(),
@@ -175,7 +179,7 @@ class _NoteViewScreenState extends ConsumerState<CreateEditNoteScreen> {
               width: 20,
             ),
             onPressed: () => vm.toggleIsPinned(),
-            tooltip: 'Delete',
+            tooltip: 'Pinned',
           ),
           const SizedBox(width: 8),
 

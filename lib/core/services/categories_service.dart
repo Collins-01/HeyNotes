@@ -1,3 +1,4 @@
+import 'package:hey_notes/core/utils/utils.dart';
 import 'package:hive/hive.dart';
 import 'package:hey_notes/core/utils/logger.dart';
 import 'package:hey_notes/models/category.dart';
@@ -35,7 +36,7 @@ class CategoryService {
   Future<void> _addAllCategory() async {
     try {
       AppLogger.i('Adding default categories');
-      final defaultCategories = [Category(name: 'All')];
+      final defaultCategories = [Category(name: Constants.defaultCategory)];
 
       AppLogger.d('Adding ${defaultCategories.length} default categories');
       for (var category in defaultCategories) {
@@ -69,8 +70,8 @@ class CategoryService {
       final categories = _categoriesBox.values.toList();
       // sort in a way that `all` starts first. regardless if whether another category starts with `a` or `A`
       categories.sort((a, b) {
-        if (a.name.toLowerCase() == 'all') return -1;
-        if (b.name.toLowerCase() == 'all') return 1;
+        if (a.name.toLowerCase() == Constants.defaultCategory.toLowerCase()) return -1;
+        if (b.name.toLowerCase() == Constants.defaultCategory.toLowerCase()) return 1;
         return a.name.compareTo(b.name);
       });
 

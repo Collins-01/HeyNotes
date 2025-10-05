@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hey_notes/core/utils/constants.dart';
 import 'package:hey_notes/enums/note_sort.dart';
 import 'package:hey_notes/models/note.dart';
 import 'package:hey_notes/providers/category_provider.dart';
@@ -85,7 +86,8 @@ class HomepageViewmodel extends StateNotifier<HomepageState> {
     }).toList();
 
     // Apply category filter if not 'all'
-    if (state.selectedCategoryID?.toLowerCase() != 'all') {
+    if (state.selectedCategoryID?.toLowerCase() !=
+        Constants.defaultCategory.toLowerCase()) {
       final categoryId = state.selectedCategoryID?.toLowerCase();
       filteredNotes = filteredNotes
           .where((note) => note.categoryId?.toLowerCase() == categoryId)

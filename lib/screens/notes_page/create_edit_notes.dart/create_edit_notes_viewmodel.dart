@@ -23,6 +23,7 @@ class CreateEditNotesViewmodel extends StateNotifier<CreateEditNoteState> {
   CreateEditNotesViewmodel(this.ref) : super(CreateEditNoteState.initial());
 
   void onInt(Note? note) {
+    AppLogger.d('Incoming Note: ${note.toString()}');
     state = state.copyWith(note: note);
     state = state.copyWith(isPinned: note?.isPinned ?? false);
     state = state.copyWith(categoryID: Optional.of(note?.categoryId));
@@ -50,6 +51,7 @@ class CreateEditNotesViewmodel extends StateNotifier<CreateEditNoteState> {
   }
 
   void setCategoryID(String? categoryID) {
+    AppLogger.d('Setting Category ID to : $categoryID');
     state = state.copyWith(categoryID: Optional.of(categoryID));
   }
 
@@ -149,15 +151,15 @@ class CreateEditNotesViewmodel extends StateNotifier<CreateEditNoteState> {
     required QuillController controller,
     VoidCallback? callback,
     required String title,
+    required bool isEdit,
   }) {
     try {
       // Convert Quill content to string
-      
+
       final content = Note.quillToString(controller);
 
-      bool isEdit = state.note != null;
-
       if (isEdit) {
+        AppLogger.d('Editing note: ${state.note!.id}');
         ref
             .read(noteProvider.notifier)
             .updateNote(
@@ -181,6 +183,7 @@ class CreateEditNotesViewmodel extends StateNotifier<CreateEditNoteState> {
         callback?.call();
         return;
       }
+      AppLogger.d('Adding new note......');
 
       final note = Note(
         id: const Uuid().v4(),
@@ -193,6 +196,7 @@ class CreateEditNotesViewmodel extends StateNotifier<CreateEditNoteState> {
         categoryId: state.categoryID.valueOrNull,
         tags: [],
       );
+      AppLogger.d('New note added: ${note.id}');
 
       ref.read(noteProvider.notifier).addNote(note);
       SwiftAlert.display(
